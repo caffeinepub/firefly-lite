@@ -1,70 +1,79 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-17T03:08:05.442Z",
+  "generatedAt": "2026-02-17T04:04:39.116Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 6,
-    "implemented": 3,
+    "total": 5,
+    "implemented": 5,
     "items": [
       {
-        "id": "REQ-10",
-        "summary": "Add React Query hooks in the frontend to call the new Budgets backend APIs (fetch monthly budgets, upsert/delete budget limits, fetch monthly budget summaries).",
+        "id": "REQ-18",
+        "summary": "Add a new Bank Connections module that lets an authenticated user create, view, and remove bank connections, scoped to the current Internet Identity Principal.",
         "status": "implemented",
         "plannedFiles": [
+          "frontend/src/pages/BankConnectionsPage.tsx",
           "frontend/src/hooks/useFinanceQueries.ts"
         ],
         "matchedFiles": [
+          "frontend/src/pages/BankConnectionsPage.tsx",
           "frontend/src/hooks/useFinanceQueries.ts"
         ]
       },
       {
-        "id": "REQ-11",
-        "summary": "Create a new Budgets screen that lets the user select a month, set per-category monthly limits, and view budget status (spent/remaining/carryover) for that month.",
+        "id": "REQ-19",
+        "summary": "Implement a UI-driven transaction sync workflow for each bank connection, including a manual “Sync now” action and visible sync status (idle/in progress/last synced/last error).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/BudgetsPage.tsx",
-          "frontend/src/App.tsx"
+          "frontend/src/pages/BankConnectionsPage.tsx",
+          "frontend/src/hooks/useFinanceQueries.ts"
         ],
         "matchedFiles": [
-          "frontend/src/pages/BudgetsPage.tsx",
-          "frontend/src/App.tsx"
+          "frontend/src/pages/BankConnectionsPage.tsx",
+          "frontend/src/hooks/useFinanceQueries.ts"
         ]
       },
       {
-        "id": "REQ-12",
-        "summary": "Add Budgets to the main navigation so it appears alongside Dashboard, Accounts, Transactions, Categories, and Settings.",
+        "id": "REQ-20",
+        "summary": "Provide an initial built-in “Mock Bank” provider that simulates downloading transaction history and imports transactions into existing Accounts/Categories/Transactions so the full end-to-end bank sync UX can be tested without external bank APIs.",
         "status": "implemented",
         "plannedFiles": [
+          "frontend/src/pages/BankConnectionsPage.tsx",
+          "frontend/src/hooks/useFinanceQueries.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/BankConnectionsPage.tsx",
+          "frontend/src/hooks/useFinanceQueries.ts"
+        ]
+      },
+      {
+        "id": "REQ-21",
+        "summary": "Add navigation and routing for the Bank Connections screen so it appears alongside the existing main sections (Dashboard, Accounts, Transactions, Categories, Budgets, Settings).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/App.tsx",
           "frontend/src/components/layout/AppShell.tsx"
         ],
         "matchedFiles": [
+          "frontend/src/App.tsx",
           "frontend/src/components/layout/AppShell.tsx"
         ]
       },
       {
-        "id": "REQ-7",
-        "summary": "Add a new Budgets data model to the Motoko backend, scoped per authenticated caller (Principal), supporting monthly budgets with per-category limits and rollover tracking between months.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-8",
-        "summary": "Implement backend canister APIs for Budgets CRUD and budget-month summary computation (spent, remaining, rollover/carryover) per category for a selected month.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-9",
-        "summary": "If adding Budgets state changes the upgrade-stable layout, add/adjust backend/migration.mo so existing user data (profiles, accounts, categories, transactions) is preserved across canister upgrades while initializing the new Budgets state safely.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
+        "id": "REQ-22",
+        "summary": "Add React Query hooks to call the new Bank Connections backend APIs (list connections, create/delete, sync, and refresh relevant cached data after sync).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/useFinanceQueries.ts",
+          "frontend/src/pages/BankConnectionsPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/useFinanceQueries.ts",
+          "frontend/src/pages/BankConnectionsPage.tsx"
+        ]
       }
     ]
   },
@@ -72,7 +81,6 @@
     "backend/main.mo",
     "backend/migration.mo",
     "build-request.json",
-    "build-template/README.md",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
@@ -83,7 +91,7 @@
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
     "frontend/src/hooks/useFinanceQueries.ts",
-    "frontend/src/pages/BudgetsPage.tsx",
+    "frontend/src/pages/BankConnectionsPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

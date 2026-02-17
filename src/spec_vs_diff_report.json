@@ -1,54 +1,54 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-17T03:08:05.439Z",
-  "summary": "Budgets route/page and navigation were added on the frontend, and backend state/migration scaffolding for budgets was introduced. However, the diff summary does not provide evidence of the required backend Budgets CRUD/summary APIs, nor the required frontend React Query hooks for budget summaries and budget limit CRUD keyed by (year, month, categoryId). The Budgets page appears to compute spending/carryover client-side from transactions rather than calling a backend budget summary API.",
+  "generatedAt": "2026-02-17T04:04:39.112Z",
+  "summary": "Diff adds a new Bank Connections page, navigation item, and route; introduces backend state/types for bank connections and a migration to extend stable state. However, the diff summary does not provide evidence that the backend canister APIs (create/list/delete/sync), the Mock Bank sync/import logic with de-duplication, or the required structured sync result and post-sync query invalidation are implemented.",
   "missing_requirements": [
     {
-      "id": "REQ-8",
-      "requirement": "Implement backend canister APIs for Budgets CRUD and budget-month summary computation (spent, remaining, rollover/carryover) per category for a selected month.",
-      "reason": "The diff shows only added budget types/state in backend/main.mo and a migration; it does not show any shared/query methods for: upsert/delete budget limit by (year, month, categoryId), listing limits for a month, or a query returning per-category budget summaries with spent/remaining/carryover and expense-category-only filtering.",
+      "id": "REQ-18",
+      "requirement": "Backend exposes canister APIs to create/list/delete bank connections and all data is scoped to the caller Principal (no cross-user access).",
+      "reason": "backend/main.mo shows new BankConnection types and state variables, but no create/list/delete bank connection API functions are visible in the provided diff excerpt.",
+      "evidence": [
+        "backend/main.mo"
+      ]
+    },
+    {
+      "id": "REQ-19",
+      "requirement": "Backend exposes a canister API to run a sync for a given connection and returns a structured result indicating how many transactions were created/ignored and any error message.",
+      "reason": "No backend sync method or structured sync result type is shown in the provided backend/main.mo excerpt; only BankConnectionStatus is visible.",
+      "evidence": [
+        "backend/main.mo"
+      ]
+    },
+    {
+      "id": "REQ-20",
+      "requirement": "Provide an initial built-in “Mock Bank” provider that simulates downloading transaction history and imports transactions into existing Accounts/Categories/Transactions; repeated syncs must not create unbounded duplicates.",
+      "reason": "The diff summary does not show any backend mock-provider logic, any transaction import during sync, or any cursor/external-id mechanism to prevent duplicates.",
       "evidence": [
         "backend/main.mo",
         "backend/migration.mo"
       ]
     },
     {
-      "id": "REQ-7",
-      "requirement": "Add a new Budgets data model to the Motoko backend, scoped per authenticated caller (Principal), supporting monthly budgets with per-category limits and rollover tracking between months.",
-      "reason": "While budget types and a per-Principal budgets map are present, the diff summary does not show evidence that budget methods exist and enforce AccessControl checks, nor does it show the rollover rule implemented in backend code (the model includes carryOver but no demonstrated rule/logic).",
+      "id": "REQ-22",
+      "requirement": "After a successful sync, invalidate/refetch Transactions (and Accounts, if affected) queries so UI reflects newly imported transactions without manual refresh.",
+      "reason": "The provided excerpt of frontend/src/hooks/useFinanceQueries.ts is truncated before any bank-connection hooks and does not show sync success handlers invalidating transactions/accounts queries.",
       "evidence": [
-        "backend/main.mo"
-      ]
-    },
-    {
-      "id": "REQ-10",
-      "requirement": "Add React Query hooks in the frontend to call the new Budgets backend APIs (fetch monthly budgets, upsert/delete budget limits, fetch monthly budget summaries).",
-      "reason": "useFinanceQueries.ts is truncated before any budgets hooks are shown. BudgetsPage imports useGetBudgets/useUpsertBudget but there is no evidence of a hook for fetching budget summaries (REQ explicitly requires this), nor clear evidence that mutations invalidate the relevant budget query keys.",
-      "evidence": [
-        "frontend/src/hooks/useFinanceQueries.ts",
-        "frontend/src/pages/BudgetsPage.tsx"
-      ]
-    },
-    {
-      "id": "REQ-11",
-      "requirement": "Create a new Budgets screen that lets the user select a month, set per-category monthly limits, and view budget status (spent/remaining/carryover) for that month.",
-      "reason": "A Budgets page exists with month navigation and limit editing, but the diff summary does not show it using the backend-provided computed budget summary API (REQ-8) to display per-category limit/spent/remaining/carryover; instead, the page computes spending/carryover from transactions client-side in the shown snippet. The snippet is truncated before confirming it displays remaining/carryover consistently per category and handles the required empty states with clear copy.",
-      "evidence": [
-        "frontend/src/pages/BudgetsPage.tsx"
+        "frontend/src/hooks/useFinanceQueries.ts"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Client-side budget summary/carryover computation using transactions and previous-month totals instead of calling a backend budget summary query.",
-      "reason": "The BuildRequest requires a backend budget summary computation API and corresponding frontend hooks. The Budgets page code shown calculates category spending and carryover locally from transactions/budgets arrays.",
+      "description": "Added an upgrade migration module for bank connections (backend/migration.mo) and wired migration into the actor.",
+      "reason": "BuildRequest allows migration changes only if stable state layout requires upgrade-safe migration; the diff introduces migration regardless, and the diff summary does not show whether stable variables were actually used/required migration in the prior version.",
       "evidence": [
-        "frontend/src/pages/BudgetsPage.tsx"
+        "backend/migration.mo",
+        "backend/main.mo"
       ]
     }
   ],
-  "confidence": 0.64,
+  "confidence": 0.58,
   "changed_files": [
     "backend/main.mo",
     "backend/migration.mo",
@@ -56,7 +56,7 @@
     "frontend/src/App.tsx",
     "frontend/src/components/layout/AppShell.tsx",
     "frontend/src/hooks/useFinanceQueries.ts",
-    "frontend/src/pages/BudgetsPage.tsx",
+    "frontend/src/pages/BankConnectionsPage.tsx",
     "project_state.json"
   ]
 }

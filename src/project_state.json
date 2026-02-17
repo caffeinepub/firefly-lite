@@ -1,9 +1,10 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 5,
+  "projectStateVersion": 9,
   "summary": "Build an app similar to Firefly 3: a personal finance tracker for managing accounts, recording transactions, and viewing spending.",
   "architectural_notes": [
-    "Future features should be implemented modularly (as separable modules/segments per feature, e.g., Budgets/Goals/Reports as independently deliverable units)."
+    "Future features should be implemented modularly (as separable modules/segments per feature, e.g., Budgets/Goals/Reports as independently deliverable units).",
+    "User requested next priorities: Bulk editing (AR-10), Tags (AR-11), and CSV import/export (AR-12)."
   ],
   "known_issues": [
     "Automated build failed with generic error ('AI was unable to implement your request') when attempting to generate the Budgets feature/module."
@@ -71,6 +72,78 @@
       "title": "Add Budgets to the main navigation so it appears alongside Dashboard, Accounts, Transactions, Categories, and Settings.",
       "reqIds": [
         "REQ-12"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-tags-data-model-scoped-to-the-authenticated-caller-principal-and-allow-each-transaction-to-be-associated-with-zero-or-more-tags-in-addition-to-its-category",
+      "title": "Add a Tags data model scoped to the authenticated caller (Principal), and allow each transaction to be associated with zero or more tags in addition to its category.",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-bulk-editing-workflow-in-the-transactions-screen-to-enable-fast-cleanup-multi-select-transactions-review-selection-count-and-apply-bulk-actions",
+      "title": "Add a bulk editing workflow in the Transactions screen to enable fast cleanup: multi-select transactions, review selection count, and apply bulk actions.",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-csv-export-for-transactions-and-any-required-related-fields-and-make-it-downloadable-from-the-frontend-without-routing-files-through-the-backend",
+      "title": "Add CSV export for transactions (and any required related fields) and make it downloadable from the frontend without routing files through the backend.",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-csv-import-for-transactions-to-enable-adding-many-transactions-at-once-with-validation-feedback-and-a-clear-success-summary",
+      "title": "Add CSV import for transactions to enable adding many transactions at once, with validation feedback and a clear success summary.",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-new-bank-connections-module-that-lets-an-authenticated-user-create-view-and-remove-bank-connections-scoped-to-the-current-internet-identity-principal",
+      "title": "Add a new Bank Connections module that lets an authenticated user create, view, and remove bank connections, scoped to the current Internet Identity Principal.",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-ui-driven-transaction-sync-workflow-for-each-bank-connection-including-a-manual-sync-now-action-and-visible-sync-status-idle-in-progress-last-synced-last-error",
+      "title": "Implement a UI-driven transaction sync workflow for each bank connection, including a manual “Sync now” action and visible sync status (idle/in progress/last synced/last error).",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-provide-an-initial-built-in-mock-bank-provider-that-simulates-downloading-transaction-history-and-imports-transactions-into-existing-accounts-categories-transactions-so-the-full-end-to-end-bank-sync-ux-can-be-tested-without-external-bank-apis",
+      "title": "Provide an initial built-in “Mock Bank” provider that simulates downloading transaction history and imports transactions into existing Accounts/Categories/Transactions so the full end-to-end bank sync UX can be tested without external bank APIs.",
+      "reqIds": [
+        "REQ-20"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-navigation-and-routing-for-the-bank-connections-screen-so-it-appears-alongside-the-existing-main-sections-dashboard-accounts-transactions-categories-budgets-settings",
+      "title": "Add navigation and routing for the Bank Connections screen so it appears alongside the existing main sections (Dashboard, Accounts, Transactions, Categories, Budgets, Settings).",
+      "reqIds": [
+        "REQ-21"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-react-query-hooks-to-call-the-new-bank-connections-backend-apis-list-connections-create-delete-sync-and-refresh-relevant-cached-data-after-sync",
+      "title": "Add React Query hooks to call the new Bank Connections backend APIs (list connections, create/delete, sync, and refresh relevant cached data after sync).",
+      "reqIds": [
+        "REQ-22"
       ],
       "version": 1
     }
@@ -172,6 +245,20 @@
       "reqIds": [
         "REQ-9"
       ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-18",
+      "summary": "Implement backend transaction update and delete capabilities (single and bulk) needed for fast transaction cleanup, including safe authorization and ownership validation per caller.",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-19",
+      "summary": "Add bank connections module: allow users to connect to banks and automatically download/sync transaction history via a UI-driven workflow.",
+      "reqIds": [],
       "status": "pending"
     }
   ],

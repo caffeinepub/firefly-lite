@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import TagsManagerCard from '../components/tags/TagsManagerCard';
 
 export default function SettingsPage() {
   const { identity } = useInternetIdentity();
@@ -63,6 +64,8 @@ export default function SettingsPage() {
           <Button onClick={handleSave}>Save Settings</Button>
         </CardContent>
       </Card>
+
+      <TagsManagerCard />
     </div>
   );
 }

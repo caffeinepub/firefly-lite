@@ -1,60 +1,103 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Firefly Lite — Budgets module (frontend hooks + Budgets screen + navigation)",
+  "title": "Firefly Lite — Bank Connections UI and Manual Sync Workflow",
   "requirements": [
     {
-      "id": "REQ-10",
-      "summary": "Add React Query hooks for Budgets queries and mutations via the backend actor.",
+      "id": "REQ-18",
+      "summary": "Add a Bank Connections screen to create, list, and remove bank connections for the authenticated user.",
       "acceptanceCriteria": [
-        "Frontend includes new hooks colocated with existing finance hooks (e.g., in frontend/src/hooks/useFinanceQueries.ts) for budgets queries and mutations.",
-        "Hooks are disabled until the backend actor is available (consistent with existing hooks).",
-        "On successful budget mutations, the relevant budget query keys are invalidated/refetched so UI updates immediately."
+        "Frontend provides a Bank Connections screen that lists existing connections and allows adding and removing a connection with clear success/error feedback in English."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/BankConnectionsPage.tsx",
+          "operation": "create",
+          "description": "Create the Bank Connections screen UI that lists connections, provides an add-connection form (name + provider/type), and supports removing a connection with clear English success/error feedback using existing shadcn-ui components (do not edit ui components). Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/hooks/useFinanceQueries.ts",
+          "operation": "modify",
+          "description": "Add React Query query/mutation hooks for bank connections list/create/delete that call the backend actor methods and provide consistent loading/error states with existing finance hooks. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-19",
+      "summary": "Add per-connection manual sync controls and visible sync status (idle/in progress/last synced/last error), including disabled state while syncing and completion/failure messages.",
+      "acceptanceCriteria": [
+        "Frontend shows per-connection sync controls and status, including a disabled state while syncing and a toast/message on completion or failure."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/BankConnectionsPage.tsx",
+          "operation": "modify",
+          "description": "Implement per-connection 'Sync now' UI and status rendering (idle/in progress/last synced/last error). Disable sync controls while syncing, show a toast/message on completion or failure (e.g., via sonner), and optionally refresh the list after sync to reflect updated status. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/hooks/useFinanceQueries.ts",
+          "operation": "modify",
+          "description": "Add a React Query mutation hook for syncing a bank connection. Ensure mutation handles in-flight state and exposes success/error callbacks suitable for toast feedback. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-20",
+      "summary": "Expose the built-in “Mock Bank” provider option in the UI so users can create a mock connection and run sync to see imported transactions appear.",
+      "acceptanceCriteria": [
+        "A user can create a connection of type “Mock Bank” from the UI and run “Sync now”.",
+        "Syncing a “Mock Bank” connection creates new transactions visible in the existing Transactions page after sync completes."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/BankConnectionsPage.tsx",
+          "operation": "modify",
+          "description": "Include “Mock Bank” as a selectable provider/type when creating a new connection, and ensure the UI guides the user to run 'Sync now' afterward. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/hooks/useFinanceQueries.ts",
+          "operation": "modify",
+          "description": "After a successful sync mutation, invalidate/refetch cached finance queries so newly imported transactions appear in the existing Transactions page without manual refresh (at minimum invalidate ['transactions'] and ['accounts'] where applicable). Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-21",
+      "summary": "Add routing and navigation entry for the Bank Connections screen alongside existing main sections, reachable only when authenticated.",
+      "acceptanceCriteria": [
+        "A new route exists for the Bank Connections screen and is accessible from the main navigation.",
+        "The Bank Connections screen is only reachable when authenticated (consistent with the existing app auth gating)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Register a new TanStack Router route for the Bank Connections page (e.g., '/bank-connections') and include it in the route tree so it is navigable when authenticated (leveraging existing app-wide auth gating). Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/layout/AppShell.tsx",
+          "operation": "modify",
+          "description": "Add a 'Bank Connections' item to the main navigation alongside Dashboard/Accounts/Transactions/Categories/Budgets/Settings, using existing button/link styling and icons. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-22",
+      "summary": "Add dedicated React Query hooks for bank connection APIs (list/create/delete/sync) and refresh relevant cached data after sync.",
+      "acceptanceCriteria": [
+        "Frontend has dedicated React Query hooks for bank connections and syncing, following the same pattern as existing finance hooks.",
+        "After a successful sync, the Transactions (and Accounts, if affected) queries are invalidated/refetched so the UI reflects newly imported transactions without a manual refresh."
       ],
       "file_operations": [
         {
           "path": "frontend/src/hooks/useFinanceQueries.ts",
           "operation": "modify",
-          "description": "Add budgets-focused React Query hooks alongside existing finance hooks: fetch budgets for a selected month (and/or all budgets), fetch the selected month’s budget summary, and mutations to create/update/delete (and a convenience upsert pattern) with proper actor-availability gating and query invalidation for budgets and budget-summary query keys."
-        }
-      ]
-    },
-    {
-      "id": "REQ-11",
-      "summary": "Create a Budgets screen with month navigation, per-category limit editing, and budget status display for the selected month.",
-      "acceptanceCriteria": [
-        "A new route exists for Budgets (e.g., /budgets) and is accessible from the main app navigation.",
-        "Budgets page shows a month selector (at minimum: current month with ability to move to previous/next month).",
-        "Budgets page lists categories and allows setting/editing a monthly limit per category (expense categories at minimum).",
-        "Budgets page displays computed budget status per category for the selected month (limit, spent, remaining, and carryover).",
-        "Empty states are handled (e.g., no categories yet, no budgets set yet) with clear English user-facing copy."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/BudgetsPage.tsx",
-          "operation": "create",
-          "description": "Create the Budgets page UI using composed shadcn/ui building blocks (e.g., Card, Button, Table, Input, Select) to provide: previous/next month navigation; an expense-category list with editable monthly limit inputs; and a per-category status section (limit, spent, remaining, carryover) powered by the new budget hooks (and existing categories/transactions hooks as needed for display). Include clear loading and empty-state copy when there are no categories and/or no budgets set yet. Verify the component's usage instructions before implementing."
+          "description": "Implement dedicated hooks: useGetBankConnections, useCreateBankConnection, useDeleteBankConnection, and useSyncBankConnection, mirroring the patterns used by existing hooks (actor dependency gating + query invalidation). Ensure sync triggers invalidation/refetch of transactions (and accounts, if affected) and bank connections status. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/pages/BankConnectionsPage.tsx",
           "operation": "modify",
-          "description": "Register the new /budgets route in the TanStack Router route tree and wire it to BudgetsPage so it is navigable within the authenticated app shell."
-        }
-      ]
-    },
-    {
-      "id": "REQ-12",
-      "summary": "Add Budgets to the main AppShell navigation with correct routing and active-state styling.",
-      "acceptanceCriteria": [
-        "The AppShell navigation includes a 'Budgets' item that routes to the Budgets page.",
-        "Active route styling works for the Budgets route similarly to existing nav items.",
-        "All user-facing navigation text is in English."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/layout/AppShell.tsx",
-          "operation": "modify",
-          "description": "Add a new 'Budgets' navigation item (with an appropriate icon) pointing to /budgets in the existing navItems list, ensuring active-route styling behavior matches the other items and label text remains in English."
+          "description": "Wire the Bank Connections screen to the new hooks, ensuring cached data updates after create/delete/sync and the UI stays consistent (loading states, disabled actions, and English error messages). Verify the component's usage instructions before implementing."
         }
       ]
     }

@@ -1,14 +1,14 @@
 # Specification
 
 ## Summary
-**Goal:** Add a Budgets module that supports monthly per-category budget limits and rollover-aware budget summaries.
+**Goal:** Add a Bank Connections section where authenticated users can create/manage bank connections and manually sync transactions into the app via a built-in Mock Bank provider.
 
 **Planned changes:**
-- Add a Budgets data model to the Motoko backend, stored per authenticated caller (Principal), keyed by month (year, month) and category, with data needed to support rollover between months.
-- Implement backend APIs to upsert/delete budget limits, list budget limits for a selected month, and compute per-category monthly budget summaries (limit, spent, remaining, carryover) using existing transactions/categories and only counting expense categories.
-- If needed, update upgrade/migration handling so existing user data remains intact while initializing Budgets state safely on upgrade.
-- Add frontend React Query hooks for budgets queries and mutations, including cache invalidation/refetch after updates.
-- Create a new Budgets screen with month navigation, per-category limit editing, and a per-category status view (spent/remaining/carryover), including clear empty states.
-- Add “Budgets” to the main navigation and route it to the new Budgets page with active-route styling.
+- Backend: Add canister APIs to create/list/delete bank connections scoped to the caller Internet Identity Principal.
+- Backend: Add a per-connection sync API that returns a structured result (created/ignored counts and any error) and tracks sync status (idle/in progress/last synced/last error).
+- Backend: Implement a built-in “Mock Bank” provider that simulates downloading transaction history and imports transactions while avoiding unbounded duplicates across repeated syncs.
+- Frontend: Add navigation + routing for a new Bank Connections screen, gated behind existing authentication rules.
+- Frontend: Build the Bank Connections UI to list connections, add/remove a connection, and run “Sync now” with clear English success/error feedback and disabled state while syncing.
+- Frontend: Add React Query hooks for bank connections (list/create/delete/sync) and invalidate/refetch Transactions (and Accounts if impacted) after successful sync so imported data appears without manual refresh.
 
-**User-visible outcome:** Users can navigate to a Budgets page, choose a month, set monthly budget limits per expense category, and see per-category budget status (spent, remaining, and carryover/rollover) for that month.
+**User-visible outcome:** Authenticated users can open Bank Connections, add a Mock Bank connection, click “Sync now” to import transactions, and then see the new transactions appear in the Transactions page with visible sync status and error feedback.

@@ -5,7 +5,7 @@ import { useGetCallerUserProfile } from '../../hooks/useFinanceQueries';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { LayoutDashboard, Wallet, ArrowLeftRight, Tag, PiggyBank, Settings, LogOut, Sparkles } from 'lucide-react';
+import { LayoutDashboard, Wallet, ArrowLeftRight, Tag, PiggyBank, Settings, LogOut, Sparkles, Link as LinkIcon } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 
 interface AppShellProps {
@@ -31,6 +31,7 @@ export default function AppShell({ children }: AppShellProps) {
     { path: '/transactions', label: 'Transactions', icon: ArrowLeftRight },
     { path: '/categories', label: 'Categories', icon: Tag },
     { path: '/budgets', label: 'Budgets', icon: PiggyBank },
+    { path: '/bank-connections', label: 'Bank Connections', icon: LinkIcon },
     { path: '/settings', label: 'Settings', icon: Settings },
   ];
 

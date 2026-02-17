@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import type { Account, Category, Transaction, UserProfile, AccountId, CategoryId, Budget, BudgetId, BudgetCategoryLimit, BudgetSummary } from '../backend';
+import type { Account, Category, Transaction, UserProfile, AccountId, CategoryId, Budget, BudgetId, BudgetCategoryLimit, BudgetSummary, Tag, TagId, TransactionId, BankConnection, BankConnectionId } from '../backend';
 
 export function useGetCallerUserProfile() {
   const { actor, isFetching: actorFetching } = useActor();
@@ -129,18 +129,65 @@ export function useCreateTransaction() {
       categoryId,
       amount,
       date,
+      tagIds = [],
     }: {
       accountId: AccountId;
       categoryId: CategoryId;
       amount: number;
       date: bigint;
+      tagIds?: TagId[];
     }) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.createTransaction(accountId, categoryId, amount, date);
+      return actor.createTransaction(accountId, categoryId, amount, date, tagIds);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
+    },
+  });
+}
+
+// Tag hooks
+export function useGetTags() {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<Tag[]>({
+    queryKey: ['tags'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getTags();
+    },
+    enabled: !!actor && !actorFetching,
+  });
+}
+
+export function useCreateTag() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (name: string) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.createTag(name);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tags'] });
+    },
+  });
+}
+
+export function useDeleteTag() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (tagId: TagId) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.deleteTag(tagId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tags'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
     },
   });
 }
@@ -290,6 +337,98 @@ export function useUpsertBudget() {
       queryClient.invalidateQueries({ queryKey: ['budgets'] });
       queryClient.invalidateQueries({ queryKey: ['budget'] });
       queryClient.invalidateQueries({ queryKey: ['budgetSummary'] });
+    },
+  });
+}
+
+// Bank connection hooks
+export function useGetBankConnections() {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<BankConnection[]>({
+    queryKey: ['bankConnections'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getBankConnections();
+    },
+    enabled: !!actor && !actorFetching,
+  });
+}
+
+export function useGetBankConnection(connectionId: BankConnectionId | null) {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<BankConnection | null>({
+    queryKey: ['bankConnection', connectionId?.toString()],
+    queryFn: async () => {
+      if (!actor || !connectionId) return null;
+      return actor.getBankConnection(connectionId);
+    },
+    enabled: !!actor && !actorFetching && !!connectionId,
+  });
+}
+
+export function useCreateBankConnection() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ name, connectionType }: { name: string; connectionType: string }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.createBankConnection(name, connectionType);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bankConnections'] });
+    },
+  });
+}
+
+export function useDeleteBankConnection() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (connectionId: BankConnectionId) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.deleteBankConnection(connectionId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bankConnections'] });
+    },
+  });
+}
+
+export function useSyncBankConnection() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (connectionId: BankConnectionId) => {
+      if (!actor) throw new Error('Actor not available');
+      await actor.syncBankConnection(connectionId);
+      
+      // Poll for status updates
+      const pollInterval = setInterval(async () => {
+        const connection = await actor.getBankConnection(connectionId);
+        if (connection && connection.status.__kind__ !== 'inProgress') {
+          clearInterval(pollInterval);
+          queryClient.invalidateQueries({ queryKey: ['bankConnections'] });
+          queryClient.invalidateQueries({ queryKey: ['transactions'] });
+          queryClient.invalidateQueries({ queryKey: ['accounts'] });
+          
+          if (connection.status.__kind__ === 'lastSynced') {
+            // Success notification will be shown by the component
+          } else if (connection.status.__kind__ === 'syncError') {
+            // Error notification will be shown by the component
+          }
+        }
+      }, 2000);
+      
+      // Clear interval after 30 seconds to prevent infinite polling
+      setTimeout(() => clearInterval(pollInterval), 30000);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bankConnections'] });
     },
   });
 }

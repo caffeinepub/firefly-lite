@@ -16,6 +16,23 @@ export interface Account {
   'name' : string,
 }
 export type AccountId = bigint;
+export interface BankConnection {
+  'id' : BankConnectionId,
+  'status' : BankConnectionStatus,
+  'name' : string,
+  'connectionType' : string,
+  'nextSyncTimestamp' : [] | [bigint],
+  'createdTimestamp' : bigint,
+  'lastSync' : [] | [bigint],
+  'retryAttempts' : bigint,
+}
+export type BankConnectionId = bigint;
+export type BankConnectionStatus = {
+    'syncError' : { 'error' : string, 'timestamp' : bigint }
+  } |
+  { 'idle' : null } |
+  { 'lastSynced' : { 'timestamp' : bigint } } |
+  { 'inProgress' : null };
 export interface Budget {
   'id' : BudgetId,
   'month' : bigint,
@@ -42,11 +59,14 @@ export interface Category {
   'name' : string,
 }
 export type CategoryId = bigint;
+export interface Tag { 'id' : TagId, 'name' : string }
+export type TagId = bigint;
 export interface Transaction {
   'id' : TransactionId,
   'categoryId' : CategoryId,
   'accountId' : AccountId,
   'date' : bigint,
+  'tags' : Array<TagId>,
   'amount' : number,
 }
 export type TransactionId = bigint;
@@ -58,23 +78,30 @@ export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'createAccount' : ActorMethod<[string], AccountId>,
+  'createBankConnection' : ActorMethod<[string, string], BankConnectionId>,
   'createBudget' : ActorMethod<
     [bigint, Array<BudgetCategoryLimit>, number],
     BudgetId
   >,
   'createCategory' : ActorMethod<[string, boolean], CategoryId>,
+  'createTag' : ActorMethod<[string], TagId>,
   'createTransaction' : ActorMethod<
-    [AccountId, CategoryId, number, bigint],
+    [AccountId, CategoryId, number, bigint, Array<TagId>],
     TransactionId
   >,
+  'deleteBankConnection' : ActorMethod<[BankConnectionId], undefined>,
   'deleteBudget' : ActorMethod<[BudgetId], undefined>,
+  'deleteTag' : ActorMethod<[TagId], undefined>,
   'getAccounts' : ActorMethod<[], Array<Account>>,
+  'getBankConnection' : ActorMethod<[BankConnectionId], [] | [BankConnection]>,
+  'getBankConnections' : ActorMethod<[], Array<BankConnection>>,
   'getBudget' : ActorMethod<[BudgetId], [] | [Budget]>,
   'getBudgetSummary' : ActorMethod<[bigint], BudgetSummary>,
   'getBudgets' : ActorMethod<[], Array<Budget>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getCategories' : ActorMethod<[], Array<Category>>,
+  'getTags' : ActorMethod<[], Array<Tag>>,
   'getTransactions' : ActorMethod<[], Array<Transaction>>,
   'getTransactionsByDateRange' : ActorMethod<
     [bigint, bigint],
@@ -83,6 +110,11 @@ export interface _SERVICE {
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
+  'syncBankConnection' : ActorMethod<[BankConnectionId], undefined>,
+  'updateBankConnectionSyncStatus' : ActorMethod<
+    [BankConnectionId, BankConnectionStatus],
+    undefined
+  >,
   'updateBudget' : ActorMethod<
     [BudgetId, bigint, Array<BudgetCategoryLimit>, number],
     undefined

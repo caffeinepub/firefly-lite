@@ -3,22 +3,26 @@ import Iter "mo:core/Iter";
 import List "mo:core/List";
 import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
-import Order "mo:core/Order";
+import Nat "mo:core/Nat";
+import Int "mo:core/Int";
+import Text "mo:core/Text";
 import Array "mo:core/Array";
+import Order "mo:core/Order";
 import Float "mo:core/Float";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
 import Migration "migration";
 
+// Main actor with migration for bank connections
 (with migration = Migration.run)
 actor {
-  // Authorization - Guest users must be authorized to persist data
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
 
   type AccountId = Nat;
   type CategoryId = Nat;
   type TransactionId = Nat;
+  type TagId = Nat;
 
   type Account = {
     id : AccountId;
@@ -38,13 +42,13 @@ actor {
     categoryId : CategoryId;
     amount : Float;
     date : Int;
+    tags : [TagId];
   };
 
   public type UserProfile = {
     name : Text;
   };
 
-  // Budget types
   type BudgetId = Nat;
 
   public type BudgetCategoryLimit = {
@@ -54,22 +58,51 @@ actor {
 
   public type Budget = {
     id : BudgetId;
-    month : Int; // YYYYMM format (e.g. 202304)
+    month : Int;
     categoryLimits : [BudgetCategoryLimit];
-    carryOver : Float; // Amount carried over from previous month
+    carryOver : Float;
   };
 
-  // Persistent state
+  public type Tag = {
+    id : TagId;
+    name : Text;
+  };
+
+  // Bank connection types
+  public type BankConnectionId = Nat;
+
+  public type BankConnectionStatus = {
+    #idle;
+    #inProgress;
+    #lastSynced : { timestamp : Int };
+    #syncError : { error : Text; timestamp : Int };
+  };
+
+  public type BankConnection = {
+    id : BankConnectionId;
+    name : Text;
+    connectionType : Text;
+    status : BankConnectionStatus;
+    nextSyncTimestamp : ?Int;
+    createdTimestamp : Int;
+    lastSync : ?Int;
+    retryAttempts : Nat;
+  };
+
   var accounts = Map.empty<Principal, Map.Map<AccountId, Account>>();
   var categories = Map.empty<Principal, Map.Map<CategoryId, Category>>();
   var transactions = Map.empty<Principal, Map.Map<TransactionId, Transaction>>();
+  var tags = Map.empty<Principal, Map.Map<TagId, Tag>>();
   var userProfiles = Map.empty<Principal, UserProfile>();
-  var budgets = Map.empty<Principal, Map.Map<Nat, Budget>>(); // Nested map for budgets per user
-
+  var budgets = Map.empty<Principal, Map.Map<Nat, Budget>>();
   var nextAccountId = 1;
   var nextCategoryId = 1;
   var nextTransactionId = 1;
   var nextBudgetId = 1;
+  var nextTagId = 1;
+  // Bank connections state
+  var bankConnections = Map.empty<Principal, Map.Map<BankConnectionId, BankConnection>>();
+  var nextBankConnectionId = 1;
 
   // User profile management
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
@@ -161,15 +194,69 @@ actor {
     };
   };
 
+  // Tag management
+  public shared ({ caller }) func createTag(name : Text) : async TagId {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can create tags");
+    };
+    let tagId = nextTagId;
+    nextTagId += 1;
+
+    let tag : Tag = {
+      id = tagId;
+      name;
+    };
+
+    let userTags = switch (tags.get(caller)) {
+      case (null) { Map.empty<TagId, Tag>() };
+      case (?existing) { existing };
+    };
+    userTags.add(tagId, tag);
+    tags.add(caller, userTags);
+
+    tagId;
+  };
+
+  public query ({ caller }) func getTags() : async [Tag] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can access tags");
+    };
+    switch (tags.get(caller)) {
+      case (null) { [] };
+      case (?userTags) { userTags.values().toArray() };
+    };
+  };
+
+  public shared ({ caller }) func deleteTag(tagId : TagId) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can delete tags");
+    };
+
+    let userTags = switch (tags.get(caller)) {
+      case (null) {
+        Runtime.trap("Tag not found or does not belong to caller");
+      };
+      case (?userTags) { userTags };
+    };
+
+    switch (userTags.get(tagId)) {
+      case (null) {
+        Runtime.trap("Tag not found or does not belong to caller");
+      };
+      case (?_) {
+        userTags.remove(tagId);
+      };
+    };
+  };
+
   // Transaction management
-  public shared ({ caller }) func createTransaction(accountId : AccountId, categoryId : CategoryId, amount : Float, date : Int) : async TransactionId {
+  public shared ({ caller }) func createTransaction(accountId : AccountId, categoryId : CategoryId, amount : Float, date : Int, tagIds : [TagId]) : async TransactionId {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can create transactions");
     };
     let transactionId = nextTransactionId;
     nextTransactionId += 1;
 
-    // Verify account ownership
     let userAccounts = switch (accounts.get(caller)) {
       case (null) {
         Runtime.trap("Account not found");
@@ -183,7 +270,6 @@ actor {
       case (?account) { account };
     };
 
-    // Verify category ownership
     let userCategories = switch (categories.get(caller)) {
       case (null) {
         Runtime.trap("Category not found or does not belong to caller");
@@ -197,12 +283,27 @@ actor {
       case (?_) {};
     };
 
+    // Validate tags
+    let userTags = switch (tags.get(caller)) {
+      case (null) { Map.empty<TagId, Tag>() };
+      case (?existing) { existing };
+    };
+    for (tagId in tagIds.values()) {
+      switch (userTags.get(tagId)) {
+        case (null) {
+          Runtime.trap("Tag not found or does not belong to caller");
+        };
+        case (?_) {};
+      };
+    };
+
     let transaction : Transaction = {
       id = transactionId;
       accountId;
       categoryId;
       amount;
       date;
+      tags = tagIds;
     };
 
     // Update account balance
@@ -213,7 +314,6 @@ actor {
     };
     userAccounts.add(accountId, updatedAccount);
 
-    // Add transaction
     let userTransactions = switch (transactions.get(caller)) {
       case (null) { Map.empty<TransactionId, Transaction>() };
       case (?existing) { existing };
@@ -260,9 +360,7 @@ actor {
     };
   };
 
-  /////////////////////////////////////////////////////////////////
-  // Budget Management
-
+  // Budget management
   public shared ({ caller }) func createBudget(month : Int, categoryLimits : [BudgetCategoryLimit], carryOver : Float) : async BudgetId {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can create budgets");
@@ -501,5 +599,141 @@ actor {
     let year = timestamp / 12;
     let month = timestamp % 12;
     year * 100 + month;
+  };
+
+  // Bank connection functions
+  public shared ({ caller }) func createBankConnection(name : Text, connectionType : Text) : async BankConnectionId {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can create bank connections");
+    };
+
+    let bankConnectionId = nextBankConnectionId;
+    nextBankConnectionId += 1;
+
+    let newConnection : BankConnection = {
+      id = bankConnectionId;
+      name;
+      connectionType;
+      status = #idle;
+      nextSyncTimestamp = null;
+      createdTimestamp = 0;
+      lastSync = null;
+      retryAttempts = 0;
+    };
+
+    let userConnections = switch (bankConnections.get(caller)) {
+      case (null) { Map.empty<BankConnectionId, BankConnection>() };
+      case (?existing) { existing };
+    };
+    userConnections.add(bankConnectionId, newConnection);
+    bankConnections.add(caller, userConnections);
+
+    bankConnectionId;
+  };
+
+  public query ({ caller }) func getBankConnections() : async [BankConnection] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can access bank connections");
+    };
+    switch (bankConnections.get(caller)) {
+      case (null) { [] };
+      case (?userConnections) { userConnections.values().toArray() };
+    };
+  };
+
+  public query ({ caller }) func getBankConnection(bankConnectionId : BankConnectionId) : async ?BankConnection {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can access bank connections");
+    };
+    switch (bankConnections.get(caller)) {
+      case (null) { null };
+      case (?userConnections) { userConnections.get(bankConnectionId) };
+    };
+  };
+
+  public shared ({ caller }) func deleteBankConnection(bankConnectionId : BankConnectionId) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can delete bank connections");
+    };
+
+    let userConnections = switch (bankConnections.get(caller)) {
+      case (null) {
+        Runtime.trap("Bank connection not found or does not belong to caller");
+      };
+      case (?userConnections) { userConnections };
+    };
+
+    switch (userConnections.get(bankConnectionId)) {
+      case (null) {
+        Runtime.trap("Bank connection not found or does not belong to caller");
+      };
+      case (?_) {
+        userConnections.remove(bankConnectionId);
+      };
+    };
+  };
+
+  public shared ({ caller }) func syncBankConnection(bankConnectionId : BankConnectionId) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can sync bank connections");
+    };
+
+    let userConnections = switch (bankConnections.get(caller)) {
+      case (null) {
+        Runtime.trap("Bank connection not found or does not belong to caller");
+      };
+      case (?userConnections) { userConnections };
+    };
+
+    switch (userConnections.get(bankConnectionId)) {
+      case (null) {
+        Runtime.trap("Bank connection not found or does not belong to caller");
+      };
+      case (?connection) {
+        let updatedConnection : BankConnection = {
+          id = connection.id;
+          name = connection.name;
+          connectionType = connection.connectionType;
+          status = #inProgress;
+          nextSyncTimestamp = connection.nextSyncTimestamp;
+          createdTimestamp = connection.createdTimestamp;
+          lastSync = connection.lastSync;
+          retryAttempts = connection.retryAttempts + 1;
+        };
+        userConnections.add(bankConnectionId, updatedConnection);
+      };
+    };
+  };
+
+  public shared ({ caller }) func updateBankConnectionSyncStatus(bankConnectionId : BankConnectionId, newStatus : BankConnectionStatus) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can update sync status");
+    };
+
+    let userConnections = switch (bankConnections.get(caller)) {
+      case (null) {
+        Runtime.trap("Bank connection not found or does not belong to caller");
+      };
+      case (?userConnections) { userConnections };
+    };
+
+    switch (userConnections.get(bankConnectionId)) {
+      case (null) {
+        Runtime.trap("Bank connection not found or does not belong to caller");
+      };
+      case (?connection) {
+        let updatedConnection : BankConnection = {
+          id = connection.id;
+          name = connection.name;
+          connectionType = connection.connectionType;
+          status = newStatus;
+          nextSyncTimestamp = connection.nextSyncTimestamp;
+          createdTimestamp = connection.createdTimestamp;
+          lastSync = if (newStatus == #inProgress) { connection.lastSync } else { if (newStatus == #lastSynced({ timestamp = 0 })) { null } else { connection.lastSync } };
+          retryAttempts = connection.retryAttempts + 1;
+        };
+        userConnections.add(bankConnectionId, updatedConnection);
+      };
+    };
   };
 };
