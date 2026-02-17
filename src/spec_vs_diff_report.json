@@ -1,139 +1,62 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-17T02:25:47.002Z",
-  "summary": "Diff adds a basic single-canister Motoko backend with per-Principal maps and a new frontend app shell with routing, auth gating, dashboard widgets, and CRUD creation flows. However, several core Firefly-like requirements are only partially implemented (notably backend CRUD completeness, transaction model/filters/editing, settings preferences, and required images). There are also extra access-control/admin-token and user-profile onboarding features not requested.",
+  "generatedAt": "2026-02-17T03:08:05.439Z",
+  "summary": "Budgets route/page and navigation were added on the frontend, and backend state/migration scaffolding for budgets was introduced. However, the diff summary does not provide evidence of the required backend Budgets CRUD/summary APIs, nor the required frontend React Query hooks for budget summaries and budget limit CRUD keyed by (year, month, categoryId). The Budgets page appears to compute spending/carryover client-side from transactions rather than calling a backend budget summary API.",
   "missing_requirements": [
     {
-      "id": "REQ-2",
-      "requirement": "Accounts API must support create, list, get, update, archive/unarchive, and delete only if no transactions reference it; ownership enforced by caller Principal.",
-      "reason": "Backend shows createAccount and getAccounts, but no evidence of get/update/archive/delete logic or referential checks in the provided snippet.",
+      "id": "REQ-8",
+      "requirement": "Implement backend canister APIs for Budgets CRUD and budget-month summary computation (spent, remaining, rollover/carryover) per category for a selected month.",
+      "reason": "The diff shows only added budget types/state in backend/main.mo and a migration; it does not show any shared/query methods for: upsert/delete budget limit by (year, month, categoryId), listing limits for a month, or a query returning per-category budget summaries with spent/remaining/carryover and expense-category-only filtering.",
       "evidence": [
-        "backend/main.mo (truncated)"
+        "backend/main.mo",
+        "backend/migration.mo"
       ]
     },
     {
-      "id": "REQ-2",
-      "requirement": "Categories API must support create, list, update, archive/unarchive, and delete only if unused; ownership enforced by caller Principal.",
-      "reason": "Backend shows createCategory and a truncated getCategories, but no evidence of update/archive/delete or unused checks.",
+      "id": "REQ-7",
+      "requirement": "Add a new Budgets data model to the Motoko backend, scoped per authenticated caller (Principal), supporting monthly budgets with per-category limits and rollover tracking between months.",
+      "reason": "While budget types and a per-Principal budgets map are present, the diff summary does not show evidence that budget methods exist and enforce AccessControl checks, nor does it show the rollover rule implemented in backend code (the model includes carryOver but no demonstrated rule/logic).",
       "evidence": [
-        "backend/main.mo (truncated)"
+        "backend/main.mo"
       ]
     },
     {
-      "id": "REQ-2",
-      "requirement": "Transactions API must support create, list with paging, get, update, and delete; each transaction includes date, amount, currency (text), description, type (income/expense/transfer), fromAccount/toAccount as applicable, optional category, optional notes.",
-      "reason": "Backend Transaction type in snippet is limited to {id, accountId, categoryId, amount, date}; there is no evidence of currency/description/type/fromAccount/toAccount/notes fields, nor paging/get/update/delete APIs.",
+      "id": "REQ-10",
+      "requirement": "Add React Query hooks in the frontend to call the new Budgets backend APIs (fetch monthly budgets, upsert/delete budget limits, fetch monthly budget summaries).",
+      "reason": "useFinanceQueries.ts is truncated before any budgets hooks are shown. BudgetsPage imports useGetBudgets/useUpsertBudget but there is no evidence of a hook for fetching budget summaries (REQ explicitly requires this), nor clear evidence that mutations invalidate the relevant budget query keys.",
       "evidence": [
-        "backend/main.mo (truncated)"
+        "frontend/src/hooks/useFinanceQueries.ts",
+        "frontend/src/pages/BudgetsPage.tsx"
       ]
     },
     {
-      "id": "REQ-2",
-      "requirement": "Summary queries must exist for totals by month, totals by category over a date range, and current balances per account.",
-      "reason": "No evidence in backend snippet of summary query functions; frontend computes category breakdown client-side from raw transactions, not via backend summary APIs.",
+      "id": "REQ-11",
+      "requirement": "Create a new Budgets screen that lets the user select a month, set per-category monthly limits, and view budget status (spent/remaining/carryover) for that month.",
+      "reason": "A Budgets page exists with month navigation and limit editing, but the diff summary does not show it using the backend-provided computed budget summary API (REQ-8) to display per-category limit/spent/remaining/carryover; instead, the page computes spending/carryover from transactions client-side in the shown snippet. The snippet is truncated before confirming it displays remaining/carryover consistently per category and handles the required empty states with clear copy.",
       "evidence": [
-        "backend/main.mo (truncated)",
-        "frontend/src/components/dashboard/QuickStats.tsx",
-        "frontend/src/components/dashboard/CategoryBreakdownChart.tsx",
-        "frontend/src/components/dashboard/TopCategories.tsx"
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "requirement": "Transactions screen supports list view with filters (date range, account, type, category) and search by description.",
-      "reason": "TransactionsPage exists in routing, but no evidence of filters/search implementation in the provided diff summary; transaction model shown also lacks description/type fields needed for search/type filters.",
-      "evidence": [
-        "frontend/src/App.tsx",
-        "backend/main.mo (truncated)"
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "requirement": "Settings includes basic preferences UI (e.g., default currency text field) stored per user.",
-      "reason": "SettingsPage is routed, but no SettingsPage implementation is shown; currency retrieval is implemented via localStorage lookup, but no UI/evidence of storing preferences per user is present in the diff excerpt.",
-      "evidence": [
-        "frontend/src/App.tsx",
-        "frontend/src/lib/format.ts"
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "requirement": "Transaction creation/editing UX supports income, expense, and transfers with validation rules per type (expense requires fromAccount; income requires toAccount; transfer requires both different).",
-      "reason": "TransactionFormDialog only supports selecting a single accountId and categoryId; it derives sign of amount from category.isExpense and has no type selector, no fromAccount/toAccount, and no transfer handling or edit flow evidence.",
-      "evidence": [
-        "frontend/src/components/transactions/TransactionFormDialog.tsx (truncated)"
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "requirement": "Form prevents submit until valid and shows inline errors; after save, list and account balances update without full refresh.",
-      "reason": "Inline validation exists, and queries are invalidated on createTransaction success, but required validation rules in REQ-4 are not met (no type/from/to). Therefore the acceptance criteria as stated are not fully implemented.",
-      "evidence": [
-        "frontend/src/components/transactions/TransactionFormDialog.tsx (truncated)",
-        "frontend/src/hooks/useFinanceQueries.ts (truncated)"
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "requirement": "Dashboard shows current month totals for income, expense, and net.",
-      "reason": "Dashboard supports selectable date ranges and QuickStats computes totals for the selected range; there is no explicit evidence that the default/current month totals are shown as a distinct requirement (though default dateRange is current-month). This is likely satisfied, but the diff is truncated; missing certainty on final rendered dashboard composition.",
-      "evidence": [
-        "frontend/src/pages/DashboardPage.tsx (truncated)",
-        "frontend/src/components/dashboard/QuickStats.tsx"
+        "frontend/src/pages/BudgetsPage.tsx"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Admin/role-based access control initialization using a secret URL parameter (caffeineAdminToken) and backend access-control mixins.",
-      "reason": "BuildRequest only requires ownership isolation by Principal and Internet Identity auth; it does not request admin roles, secret-token initialization, or an authorization subsystem beyond per-caller scoping.",
+      "description": "Client-side budget summary/carryover computation using transactions and previous-month totals instead of calling a backend budget summary query.",
+      "reason": "The BuildRequest requires a backend budget summary computation API and corresponding frontend hooks. The Budgets page code shown calculates category spending and carryover locally from transactions/budgets arrays.",
       "evidence": [
-        "backend/main.mo (truncated)",
-        "frontend/src/hooks/useActor.ts"
-      ]
-    },
-    {
-      "description": "User profile onboarding flow (ProfileSetupDialog) and user profile APIs (get/save user profile).",
-      "reason": "BuildRequest does not mention user profiles; Settings preferences are requested instead. This adds additional concepts and UI flow not requested.",
-      "evidence": [
-        "backend/main.mo (truncated)",
-        "frontend/src/components/auth/AuthGate.tsx",
-        "frontend/src/components/auth/ProfileSetupDialog.tsx",
-        "frontend/src/hooks/useFinanceQueries.ts (truncated)"
+        "frontend/src/pages/BudgetsPage.tsx"
       ]
     }
   ],
-  "confidence": 0.66,
+  "confidence": 0.64,
   "changed_files": [
-    "all_files_summary.json",
     "backend/main.mo",
+    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/index.css",
-    "frontend/index.html",
     "frontend/src/App.tsx",
-    "frontend/src/components/auth/AuthGate.tsx",
-    "frontend/src/components/auth/LoginScreen.tsx",
-    "frontend/src/components/auth/ProfileSetupDialog.tsx",
-    "frontend/src/components/dashboard/CategoryBreakdownChart.tsx",
-    "frontend/src/components/dashboard/QuickStats.tsx",
-    "frontend/src/components/dashboard/TopCategories.tsx",
     "frontend/src/components/layout/AppShell.tsx",
-    "frontend/src/components/transactions/TransactionFormDialog.tsx",
-    "frontend/src/hooks/useActor.ts",
     "frontend/src/hooks/useFinanceQueries.ts",
-    "frontend/src/hooks/useInternetIdentity.ts",
-    "frontend/src/index.css",
-    "frontend/src/lib/format.ts",
-    "frontend/src/main.tsx",
-    "frontend/src/pages/AccountDetailPage.tsx",
-    "frontend/src/pages/AccountsPage.tsx",
-    "frontend/src/pages/CategoriesPage.tsx",
-    "frontend/src/pages/DashboardPage.tsx",
-    "frontend/src/pages/SettingsPage.tsx",
-    "frontend/src/pages/TransactionsPage.tsx",
-    "frontend/src/utils/urlParams.ts",
-    "frontend/tailwind.config.js",
+    "frontend/src/pages/BudgetsPage.tsx",
     "project_state.json"
   ]
 }

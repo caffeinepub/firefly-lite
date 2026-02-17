@@ -1,142 +1,139 @@
 {
   "kind": "build_request",
-  "title": "Firefly 3-like Personal Finance Tracker (Accounts, Transactions, Spending Overview)",
+  "title": "Add Budgets module (monthly budgets, category limits, rollover)",
   "projectName": "Firefly Lite",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-1",
-      "text": "Implement Internet Identity sign-in and sign-out, and scope all finance data to the currently authenticated user (Principal).",
-      "target": "both",
+      "id": "REQ-7",
+      "text": "Add a new Budgets data model to the Motoko backend, scoped per authenticated caller (Principal), supporting monthly budgets with per-category limits and rollover tracking between months.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-1",
+          "msg-2"
         ],
         "quotes": [
-          "There is an app called Firefly 3. Can you make a similar app?"
+          "Create this Budgets: monthly budgets, category limits, and rollover logic, first",
+          "Yes"
         ]
       },
       "acceptanceCriteria": [
-        "Unauthenticated users can access only a sign-in screen/CTA and cannot read/write finance data.",
-        "Authenticated users see their own data only; data is isolated per Principal.",
-        "A clear sign-out action is available in the app UI."
+        "Backend defines a Budget entity keyed by a unique BudgetId and associated with (year, month) and CategoryId.",
+        "Budgets are stored per-caller Principal, consistent with existing accounts/categories/transactions storage patterns.",
+        "Budget limits support per-category monthly caps (one limit per category per month).",
+        "Backend stores enough information to support rollover between months (e.g., computed or persisted carryover amount), and defines the rollover rule in code (carry remaining/overspend forward to next month).",
+        "All budget methods trap/deny access when caller is not authorized as a user (consistent with existing AccessControl checks)."
       ]
     },
     {
-      "id": "REQ-2",
-      "text": "Create backend data models and canister APIs to manage personal finance data: accounts, categories, transactions, and summary queries.",
+      "id": "REQ-8",
+      "text": "Implement backend canister APIs for Budgets CRUD and budget-month summary computation (spent, remaining, rollover/carryover) per category for a selected month.",
       "target": "backend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "There is an app called Firefly 3. Can you make a similar app?"
+          "Create this Budgets: monthly budgets, category limits, and rollover logic, first"
         ]
       },
       "acceptanceCriteria": [
-        "Accounts support: create, list, get, update, archive/unarchive, delete (only if no transactions reference it).",
-        "Categories support: create, list, update, archive/unarchive, delete (only if unused).",
-        "Transactions support: create, list (with paging), get, update, delete.",
-        "Each transaction includes: date, amount, currency (as text), description, type (income/expense/transfer), fromAccount/toAccount as applicable, optional category, and optional notes.",
-        "Summary queries exist for: totals by month, totals by category over a date range, and current balances per account.",
-        "All APIs enforce ownership using caller Principal."
+        "Backend exposes methods to create/update/delete a budget limit for a given (year, month, categoryId).",
+        "Backend exposes a query method to list all budget limits for a given (year, month).",
+        "Backend exposes a query method that returns a per-category budget summary for a given (year, month), including: limit, spent (from transactions in that month), remaining, and carryover from previous month according to the rollover rule.",
+        "Budget summary computation uses the existing transactions and categories data, and only counts spending for expense categories (Category.isExpense = true).",
+        "If a category has no budget limit set for the month, it is either omitted from the summary or returned with a null/zero limit (choose one behavior and keep it consistent and documented via types)."
       ]
     },
     {
-      "id": "REQ-3",
-      "text": "Build the core UI screens for a Firefly 3-like workflow: Dashboard (overview), Accounts, Transactions, Categories, and Settings.",
+      "id": "REQ-9",
+      "text": "If adding Budgets state changes the upgrade-stable layout, add/adjust backend/migration.mo so existing user data (profiles, accounts, categories, transactions) is preserved across canister upgrades while initializing the new Budgets state safely.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Create this Budgets: monthly budgets, category limits, and rollover logic, first"
+        ]
+      },
+      "acceptanceCriteria": [
+        "After an upgrade, previously created accounts, categories, transactions, and profiles remain accessible and unchanged.",
+        "Budgets state initializes to an empty state for existing users if no budgets existed previously.",
+        "No upgrade-time traps occur due to missing/extra fields in persisted state."
+      ]
+    },
+    {
+      "id": "REQ-10",
+      "text": "Add React Query hooks in the frontend to call the new Budgets backend APIs (fetch monthly budgets, upsert/delete budget limits, fetch monthly budget summaries).",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "There is an app called Firefly 3. Can you make a similar app?"
+          "Create this Budgets: monthly budgets, category limits, and rollover logic, first"
         ]
       },
       "acceptanceCriteria": [
-        "Navigation provides access to Dashboard, Accounts, Transactions, Categories, and Settings.",
-        "Accounts screen shows account list with balances and an account detail view with transaction list for that account.",
-        "Transactions screen supports list view with filters (date range, account, type, category) and search by description.",
-        "Categories screen lists categories and shows spend totals for a chosen date range.",
-        "Settings includes basic preferences UI (e.g., default currency text field) stored per user."
+        "Frontend includes new hooks colocated with existing finance hooks (e.g., in frontend/src/hooks/useFinanceQueries.ts) for budgets queries and mutations.",
+        "Hooks are disabled until the backend actor is available (consistent with existing hooks).",
+        "On successful budget mutations, the relevant budget query keys are invalidated/refetched so UI updates immediately."
       ]
     },
     {
-      "id": "REQ-4",
-      "text": "Implement transaction creation/editing UX that supports income, expense, and transfers, with validation and helpful defaults.",
+      "id": "REQ-11",
+      "text": "Create a new Budgets screen that lets the user select a month, set per-category monthly limits, and view budget status (spent/remaining/carryover) for that month.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "There is an app called Firefly 3. Can you make a similar app?"
+          "Create this Budgets: monthly budgets, category limits, and rollover logic, first"
         ]
       },
       "acceptanceCriteria": [
-        "A transaction form allows selecting type (income/expense/transfer).",
-        "For expense: requires fromAccount, amount > 0, date; toAccount is not required.",
-        "For income: requires toAccount, amount > 0, date; fromAccount is not required.",
-        "For transfer: requires both fromAccount and toAccount (must be different), amount > 0, date.",
-        "Form displays inline validation errors and prevents submit until valid.",
-        "After save, the list and account balances update without a full page refresh."
+        "A new route exists for Budgets (e.g., /budgets) and is accessible from the main app navigation.",
+        "Budgets page shows a month selector (at minimum: current month with ability to move to previous/next month).",
+        "Budgets page lists categories and allows setting/editing a monthly limit per category (expense categories at minimum).",
+        "Budgets page displays computed budget status per category for the selected month (limit, spent, remaining, and carryover).",
+        "Empty states are handled (e.g., no categories yet, no budgets set yet) with clear English user-facing copy."
       ]
     },
     {
-      "id": "REQ-5",
-      "text": "Add a spending overview dashboard with charts and quick stats (current month income/expense, net, and top categories).",
+      "id": "REQ-12",
+      "text": "Add Budgets to the main navigation so it appears alongside Dashboard, Accounts, Transactions, Categories, and Settings.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "There is an app called Firefly 3. Can you make a similar app?"
+          "Create this Budgets: monthly budgets, category limits, and rollover logic, first"
         ]
       },
       "acceptanceCriteria": [
-        "Dashboard shows current month totals for income, expense, and net.",
-        "Dashboard shows a breakdown chart by category for a selected date range (default: current month).",
-        "Dashboard shows a small list of top spending categories (e.g., top 5) with amounts.",
-        "If there is no data, the dashboard shows an empty state with a clear prompt to add an account/transaction."
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "text": "Add initial visual design direction and apply it consistently across the app (layout, typography, spacing, and component styling). Choose a distinctive theme appropriate for a personal finance product without using a blue/purple primary palette.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "There is an app called Firefly 3. Can you make a similar app?"
-        ]
-      },
-      "acceptanceCriteria": [
-        "A coherent theme is applied across pages (e.g., warm neutral palette with green accents, consistent typography and card/table styles).",
-        "Key UI elements (nav, tables, forms, empty states) look consistent and polished.",
-        "Theme avoids blue/purple as the primary brand colors."
+        "The AppShell navigation includes a 'Budgets' item that routes to the Budgets page.",
+        "Active route styling works for the Budgets route similarly to existing nav items.",
+        "All user-facing navigation text is in English."
       ]
     }
   ],
   "constraints": [
-    "Backend must be implemented as a single Motoko actor (single canister).",
-    "Do not edit files under frontend immutable paths (frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui); only compose/reuse them.",
-    "Use English for all user-facing text."
+    "Backend must remain a single-actor Motoko canister (all logic in backend/main.mo; add backend/migration.mo only if required for preserving state).",
+    "Do not edit files under frontend/src/components/ui (compose existing shadcn components instead).",
+    "Do not edit immutable frontend hook/bootstrap paths listed in SYSTEM_CONTEXT (frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx).",
+    "No external databases or third-party services; persist budgets in-canister scoped by Principal, consistent with existing data."
   ],
   "nonGoals": [
-    "Advanced Firefly 3 features such as rule-based automation, recurring transactions, bill reminders, attachments, multi-user sharing, and complex budgeting envelopes.",
-    "Integration with external banks or importing via third-party services.",
-    "Real-time updates via WebSockets or push notifications."
+    "Implement the other future modules (Goals, Recurring schedules, Alerts, Advanced reports, Net-worth, Bulk editing, Tags, CSV import/export, Shared accounts/household mode).",
+    "Add notifications, real-time updates, or background scheduling/automation for budgets (this module is manual budgets + computed summaries only).",
+    "Redesign the app’s overall visual theme (keep the existing theme and styling direction)."
   ],
   "imageRequirements": {
-    "required": [
-      "Minimal finance app icon with a firefly-inspired abstract mark (app-icon.dim_512x512.png)",
-      "Subtle dashboard header illustration with warm neutral tones and green accents (dashboard-hero.dim_1600x400.png)"
-    ],
+    "required": [],
     "edits": []
   }
 }

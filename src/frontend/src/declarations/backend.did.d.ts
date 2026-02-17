@@ -16,6 +16,26 @@ export interface Account {
   'name' : string,
 }
 export type AccountId = bigint;
+export interface Budget {
+  'id' : BudgetId,
+  'month' : bigint,
+  'carryOver' : number,
+  'categoryLimits' : Array<BudgetCategoryLimit>,
+}
+export interface BudgetCategoryLimit {
+  'categoryId' : CategoryId,
+  'limitAmount' : number,
+}
+export type BudgetId = bigint;
+export interface BudgetSummary {
+  'month' : bigint,
+  'totalIncomeBudget' : number,
+  'actualIncome' : number,
+  'actualExpenses' : number,
+  'remainingIncomeBudget' : number,
+  'totalExpenseBudget' : number,
+  'remainingExpenseBudget' : number,
+}
 export interface Category {
   'id' : CategoryId,
   'isExpense' : boolean,
@@ -38,12 +58,20 @@ export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'createAccount' : ActorMethod<[string], AccountId>,
+  'createBudget' : ActorMethod<
+    [bigint, Array<BudgetCategoryLimit>, number],
+    BudgetId
+  >,
   'createCategory' : ActorMethod<[string, boolean], CategoryId>,
   'createTransaction' : ActorMethod<
     [AccountId, CategoryId, number, bigint],
     TransactionId
   >,
+  'deleteBudget' : ActorMethod<[BudgetId], undefined>,
   'getAccounts' : ActorMethod<[], Array<Account>>,
+  'getBudget' : ActorMethod<[BudgetId], [] | [Budget]>,
+  'getBudgetSummary' : ActorMethod<[bigint], BudgetSummary>,
+  'getBudgets' : ActorMethod<[], Array<Budget>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getCategories' : ActorMethod<[], Array<Category>>,
@@ -55,6 +83,10 @@ export interface _SERVICE {
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
+  'updateBudget' : ActorMethod<
+    [BudgetId, bigint, Array<BudgetCategoryLimit>, number],
+    undefined
+  >,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

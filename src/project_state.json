@@ -1,11 +1,14 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 3,
+  "projectStateVersion": 5,
   "summary": "Build an app similar to Firefly 3: a personal finance tracker for managing accounts, recording transactions, and viewing spending.",
-  "architectural_notes": [],
-  "known_issues": [],
+  "architectural_notes": [
+    "Future features should be implemented modularly (as separable modules/segments per feature, e.g., Budgets/Goals/Reports as independently deliverable units)."
+  ],
+  "known_issues": [
+    "Automated build failed with generic error ('AI was unable to implement your request') when attempting to generate the Budgets feature/module."
+  ],
   "isFixRequest": false,
-  "imageRequirements": "## Required Images\n- Minimal finance app icon with a firefly-inspired abstract mark (app-icon.dim_512x512.png)\n- Subtle dashboard header illustration with warm neutral tones and green accents (dashboard-hero.dim_1600x400.png)",
   "existing_features": [
     {
       "id": "feature-implement-internet-identity-sign-in-and-sign-out-and-scope-all-finance-data-to-the-currently-authenticated-user-principal",
@@ -46,6 +49,30 @@
         "REQ-6"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-add-react-query-hooks-in-the-frontend-to-call-the-new-budgets-backend-apis-fetch-monthly-budgets-upsert-delete-budget-limits-fetch-monthly-budget-summaries",
+      "title": "Add React Query hooks in the frontend to call the new Budgets backend APIs (fetch monthly budgets, upsert/delete budget limits, fetch monthly budget summaries).",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-new-budgets-screen-that-lets-the-user-select-a-month-set-per-category-monthly-limits-and-view-budget-status-spent-remaining-carryover-for-that-month",
+      "title": "Create a new Budgets screen that lets the user select a month, set per-category monthly limits, and view budget status (spent/remaining/carryover) for that month.",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-budgets-to-the-main-navigation-so-it-appears-alongside-dashboard-accounts-transactions-categories-and-settings",
+      "title": "Add Budgets to the main navigation so it appears alongside Dashboard, Accounts, Transactions, Categories, and Settings.",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -60,6 +87,90 @@
       "summary": "Create backend data models and canister APIs to manage personal finance data: accounts, categories, transactions, and summary queries.",
       "reqIds": [
         "REQ-2"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Add Budgets module: monthly budgets, per-category limits, and rollover logic (implemented as a modular feature).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Add Goals module: savings targets with progress tracking (modular).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Add Recurring schedules module: create recurring transactions (monthly/yearly) with automation (modular).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Add Alerts module: low-balance and high-spending notifications (modular).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Add Advanced reports module: trends, comparisons, and custom date ranges (modular).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "Add Net-worth module: assets minus liabilities view over time (modular).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-10",
+      "summary": "Add Bulk editing module: fast cleanup/editing of multiple transactions (modular).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-11",
+      "summary": "Add Tags module: transaction labeling beyond categories (modular).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-12",
+      "summary": "Add CSV import/export module for transactions/accounts (modular).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-13",
+      "summary": "Add Shared accounts/household mode module: shared access to selected accounts (modular).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-14",
+      "summary": "Add a new Budgets data model to the Motoko backend, scoped per authenticated caller (Principal), supporting monthly budgets with per-category limits and rollover tracking between months.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-15",
+      "summary": "Implement backend canister APIs for Budgets CRUD and budget-month summary computation (spent, remaining, rollover/carryover) per category for a selected month.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-16",
+      "summary": "If adding Budgets state changes the upgrade-stable layout, add/adjust backend/migration.mo so existing user data (profiles, accounts, categories, transactions) is preserved across canister upgrades while initializing the new Budgets state safely.",
+      "reqIds": [
+        "REQ-9"
       ],
       "status": "pending"
     }

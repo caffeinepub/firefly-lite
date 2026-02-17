@@ -89,9 +89,6 @@ export class ExternalBlob {
         return this;
     }
 }
-export interface UserProfile {
-    name: string;
-}
 export interface Transaction {
     id: TransactionId;
     categoryId: CategoryId;
@@ -99,7 +96,28 @@ export interface Transaction {
     date: bigint;
     amount: number;
 }
+export interface BudgetSummary {
+    month: bigint;
+    totalIncomeBudget: number;
+    actualIncome: number;
+    actualExpenses: number;
+    remainingIncomeBudget: number;
+    totalExpenseBudget: number;
+    remainingExpenseBudget: number;
+}
 export type TransactionId = bigint;
+export type BudgetId = bigint;
+export interface BudgetCategoryLimit {
+    categoryId: CategoryId;
+    limitAmount: number;
+}
+export interface Budget {
+    id: BudgetId;
+    month: bigint;
+    carryOver: number;
+    categoryLimits: Array<BudgetCategoryLimit>;
+}
+export type AccountId = bigint;
 export interface Account {
     id: AccountId;
     balance: number;
@@ -111,7 +129,9 @@ export interface Category {
     isExpense: boolean;
     name: string;
 }
-export type AccountId = bigint;
+export interface UserProfile {
+    name: string;
+}
 export enum UserRole {
     admin = "admin",
     user = "user",
@@ -121,9 +141,14 @@ export interface backendInterface {
     _initializeAccessControlWithSecret(userSecret: string): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     createAccount(name: string): Promise<AccountId>;
+    createBudget(month: bigint, categoryLimits: Array<BudgetCategoryLimit>, carryOver: number): Promise<BudgetId>;
     createCategory(name: string, isExpense: boolean): Promise<CategoryId>;
     createTransaction(accountId: AccountId, categoryId: CategoryId, amount: number, date: bigint): Promise<TransactionId>;
+    deleteBudget(budgetId: BudgetId): Promise<void>;
     getAccounts(): Promise<Array<Account>>;
+    getBudget(budgetId: BudgetId): Promise<Budget | null>;
+    getBudgetSummary(month: bigint): Promise<BudgetSummary>;
+    getBudgets(): Promise<Array<Budget>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getCategories(): Promise<Array<Category>>;
@@ -132,8 +157,9 @@ export interface backendInterface {
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
+    updateBudget(budgetId: BudgetId, month: bigint, categoryLimits: Array<BudgetCategoryLimit>, carryOver: number): Promise<void>;
 }
-import type { UserProfile as _UserProfile, UserRole as _UserRole } from "./declarations/backend.did.d.ts";
+import type { Budget as _Budget, UserProfile as _UserProfile, UserRole as _UserRole } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
     async _initializeAccessControlWithSecret(arg0: string): Promise<void> {
@@ -178,6 +204,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async createBudget(arg0: bigint, arg1: Array<BudgetCategoryLimit>, arg2: number): Promise<BudgetId> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.createBudget(arg0, arg1, arg2);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.createBudget(arg0, arg1, arg2);
+            return result;
+        }
+    }
     async createCategory(arg0: string, arg1: boolean): Promise<CategoryId> {
         if (this.processError) {
             try {
@@ -206,6 +246,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async deleteBudget(arg0: BudgetId): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.deleteBudget(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.deleteBudget(arg0);
+            return result;
+        }
+    }
     async getAccounts(): Promise<Array<Account>> {
         if (this.processError) {
             try {
@@ -220,32 +274,74 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async getCallerUserProfile(): Promise<UserProfile | null> {
+    async getBudget(arg0: BudgetId): Promise<Budget | null> {
         if (this.processError) {
             try {
-                const result = await this.actor.getCallerUserProfile();
+                const result = await this.actor.getBudget(arg0);
                 return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.getCallerUserProfile();
+            const result = await this.actor.getBudget(arg0);
             return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getBudgetSummary(arg0: bigint): Promise<BudgetSummary> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getBudgetSummary(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getBudgetSummary(arg0);
+            return result;
+        }
+    }
+    async getBudgets(): Promise<Array<Budget>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getBudgets();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getBudgets();
+            return result;
+        }
+    }
+    async getCallerUserProfile(): Promise<UserProfile | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getCallerUserProfile();
+                return from_candid_opt_n4(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getCallerUserProfile();
+            return from_candid_opt_n4(this._uploadFile, this._downloadFile, result);
         }
     }
     async getCallerUserRole(): Promise<UserRole> {
         if (this.processError) {
             try {
                 const result = await this.actor.getCallerUserRole();
-                return from_candid_UserRole_n4(this._uploadFile, this._downloadFile, result);
+                return from_candid_UserRole_n5(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getCallerUserRole();
-            return from_candid_UserRole_n4(this._uploadFile, this._downloadFile, result);
+            return from_candid_UserRole_n5(this._uploadFile, this._downloadFile, result);
         }
     }
     async getCategories(): Promise<Array<Category>> {
@@ -294,14 +390,14 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.getUserProfile(arg0);
-                return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n4(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getUserProfile(arg0);
-            return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n4(this._uploadFile, this._downloadFile, result);
         }
     }
     async isCallerAdmin(): Promise<boolean> {
@@ -332,14 +428,31 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async updateBudget(arg0: BudgetId, arg1: bigint, arg2: Array<BudgetCategoryLimit>, arg3: number): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.updateBudget(arg0, arg1, arg2, arg3);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.updateBudget(arg0, arg1, arg2, arg3);
+            return result;
+        }
+    }
 }
-function from_candid_UserRole_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
-    return from_candid_variant_n5(_uploadFile, _downloadFile, value);
+function from_candid_UserRole_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
+    return from_candid_variant_n6(_uploadFile, _downloadFile, value);
 }
-function from_candid_opt_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UserProfile]): UserProfile | null {
+function from_candid_opt_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Budget]): Budget | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_variant_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_opt_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UserProfile]): UserProfile | null {
+    return value.length === 0 ? null : value[0];
+}
+function from_candid_variant_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     admin: null;
 } | {
     user: null;

@@ -2,13 +2,48 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-implement-internet-identity-sign-in-and-sign-out-and-scope-all-finance-data-to-the-currently-authenticated-user-principal",
-      "featureTitle": "Implement Internet Identity sign-in and sign-out, and scope all finance data to the currently authenticated user (Principal).",
+      "featureId": "feature-add-react-query-hooks-in-the-frontend-to-call-the-new-budgets-backend-apis-fetch-monthly-budgets-upsert-delete-budget-limits-fetch-monthly-budget-summaries",
+      "featureTitle": "Add React Query hooks in the frontend to call the new Budgets backend APIs (fetch monthly budgets, upsert/delete budget limits, fetch monthly budget summaries).",
+      "files": [
+        "frontend/src/hooks/useFinanceQueries.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-10"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-create-a-new-budgets-screen-that-lets-the-user-select-a-month-set-per-category-monthly-limits-and-view-budget-status-spent-remaining-carryover-for-that-month",
+      "featureTitle": "Create a new Budgets screen that lets the user select a month, set per-category monthly limits, and view budget status (spent/remaining/carryover) for that month.",
       "files": [
         "frontend/src/App.tsx",
-        "frontend/src/components/auth/AuthGate.tsx",
-        "frontend/src/components/auth/LoginScreen.tsx",
-        "frontend/src/components/auth/ProfileSetupDialog.tsx",
+        "frontend/src/pages/BudgetsPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-11"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-budgets-to-the-main-navigation-so-it-appears-alongside-dashboard-accounts-transactions-categories-and-settings",
+      "featureTitle": "Add Budgets to the main navigation so it appears alongside Dashboard, Accounts, Transactions, Categories, and Settings.",
+      "files": [
         "frontend/src/components/layout/AppShell.tsx"
       ],
       "components": [
@@ -20,99 +55,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-1"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-build-the-core-ui-screens-for-a-firefly-3-like-workflow-dashboard-overview-accounts-transactions-categories-and-settings",
-      "featureTitle": "Build the core UI screens for a Firefly 3-like workflow: Dashboard (overview), Accounts, Transactions, Categories, and Settings.",
-      "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/hooks/useFinanceQueries.ts",
-        "frontend/src/lib/format.ts",
-        "frontend/src/pages/AccountDetailPage.tsx",
-        "frontend/src/pages/AccountsPage.tsx",
-        "frontend/src/pages/CategoriesPage.tsx",
-        "frontend/src/pages/DashboardPage.tsx",
-        "frontend/src/pages/SettingsPage.tsx",
-        "frontend/src/pages/TransactionsPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-3"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-implement-transaction-creation-editing-ux-that-supports-income-expense-and-transfers-with-validation-and-helpful-defaults",
-      "featureTitle": "Implement transaction creation/editing UX that supports income, expense, and transfers, with validation and helpful defaults.",
-      "files": [
-        "frontend/src/components/transactions/TransactionFormDialog.tsx",
-        "frontend/src/pages/AccountDetailPage.tsx",
-        "frontend/src/pages/TransactionsPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-4"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-a-spending-overview-dashboard-with-charts-and-quick-stats-current-month-income-expense-net-and-top-categories",
-      "featureTitle": "Add a spending overview dashboard with charts and quick stats (current month income/expense, net, and top categories).",
-      "files": [
-        "frontend/src/components/dashboard/CategoryBreakdownChart.tsx",
-        "frontend/src/components/dashboard/QuickStats.tsx",
-        "frontend/src/components/dashboard/TopCategories.tsx",
-        "frontend/src/pages/DashboardPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-5"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-initial-visual-design-direction-and-apply-it-consistently-across-the-app-layout-typography-spacing-and-component-styling-choose-a-distinctive-theme-appropriate-for-a-personal-finance-product-without-using-a-blue-purple-primary-palette",
-      "featureTitle": "Add initial visual design direction and apply it consistently across the app (layout, typography, spacing, and component styling). Choose a distinctive theme appropriate for a personal finance product without using a blue/purple primary palette.",
-      "files": [
-        "frontend/index.html",
-        "frontend/src/components/layout/AppShell.tsx",
-        "frontend/src/index.css",
-        "frontend/tailwind.config.js"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-6"
+        "REQ-12"
       ],
       "confidence": "high"
     }

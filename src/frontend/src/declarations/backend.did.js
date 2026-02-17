@@ -15,11 +15,31 @@ export const UserRole = IDL.Variant({
 });
 export const AccountId = IDL.Nat;
 export const CategoryId = IDL.Nat;
+export const BudgetCategoryLimit = IDL.Record({
+  'categoryId' : CategoryId,
+  'limitAmount' : IDL.Float64,
+});
+export const BudgetId = IDL.Nat;
 export const TransactionId = IDL.Nat;
 export const Account = IDL.Record({
   'id' : AccountId,
   'balance' : IDL.Float64,
   'name' : IDL.Text,
+});
+export const Budget = IDL.Record({
+  'id' : BudgetId,
+  'month' : IDL.Int,
+  'carryOver' : IDL.Float64,
+  'categoryLimits' : IDL.Vec(BudgetCategoryLimit),
+});
+export const BudgetSummary = IDL.Record({
+  'month' : IDL.Int,
+  'totalIncomeBudget' : IDL.Float64,
+  'actualIncome' : IDL.Float64,
+  'actualExpenses' : IDL.Float64,
+  'remainingIncomeBudget' : IDL.Float64,
+  'totalExpenseBudget' : IDL.Float64,
+  'remainingExpenseBudget' : IDL.Float64,
 });
 export const UserProfile = IDL.Record({ 'name' : IDL.Text });
 export const Category = IDL.Record({
@@ -39,13 +59,22 @@ export const idlService = IDL.Service({
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'createAccount' : IDL.Func([IDL.Text], [AccountId], []),
+  'createBudget' : IDL.Func(
+      [IDL.Int, IDL.Vec(BudgetCategoryLimit), IDL.Float64],
+      [BudgetId],
+      [],
+    ),
   'createCategory' : IDL.Func([IDL.Text, IDL.Bool], [CategoryId], []),
   'createTransaction' : IDL.Func(
       [AccountId, CategoryId, IDL.Float64, IDL.Int],
       [TransactionId],
       [],
     ),
+  'deleteBudget' : IDL.Func([BudgetId], [], []),
   'getAccounts' : IDL.Func([], [IDL.Vec(Account)], ['query']),
+  'getBudget' : IDL.Func([BudgetId], [IDL.Opt(Budget)], ['query']),
+  'getBudgetSummary' : IDL.Func([IDL.Int], [BudgetSummary], ['query']),
+  'getBudgets' : IDL.Func([], [IDL.Vec(Budget)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getCategories' : IDL.Func([], [IDL.Vec(Category)], ['query']),
@@ -62,6 +91,11 @@ export const idlService = IDL.Service({
     ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+  'updateBudget' : IDL.Func(
+      [BudgetId, IDL.Int, IDL.Vec(BudgetCategoryLimit), IDL.Float64],
+      [],
+      [],
+    ),
 });
 
 export const idlInitArgs = [];
@@ -74,11 +108,31 @@ export const idlFactory = ({ IDL }) => {
   });
   const AccountId = IDL.Nat;
   const CategoryId = IDL.Nat;
+  const BudgetCategoryLimit = IDL.Record({
+    'categoryId' : CategoryId,
+    'limitAmount' : IDL.Float64,
+  });
+  const BudgetId = IDL.Nat;
   const TransactionId = IDL.Nat;
   const Account = IDL.Record({
     'id' : AccountId,
     'balance' : IDL.Float64,
     'name' : IDL.Text,
+  });
+  const Budget = IDL.Record({
+    'id' : BudgetId,
+    'month' : IDL.Int,
+    'carryOver' : IDL.Float64,
+    'categoryLimits' : IDL.Vec(BudgetCategoryLimit),
+  });
+  const BudgetSummary = IDL.Record({
+    'month' : IDL.Int,
+    'totalIncomeBudget' : IDL.Float64,
+    'actualIncome' : IDL.Float64,
+    'actualExpenses' : IDL.Float64,
+    'remainingIncomeBudget' : IDL.Float64,
+    'totalExpenseBudget' : IDL.Float64,
+    'remainingExpenseBudget' : IDL.Float64,
   });
   const UserProfile = IDL.Record({ 'name' : IDL.Text });
   const Category = IDL.Record({
@@ -98,13 +152,22 @@ export const idlFactory = ({ IDL }) => {
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'createAccount' : IDL.Func([IDL.Text], [AccountId], []),
+    'createBudget' : IDL.Func(
+        [IDL.Int, IDL.Vec(BudgetCategoryLimit), IDL.Float64],
+        [BudgetId],
+        [],
+      ),
     'createCategory' : IDL.Func([IDL.Text, IDL.Bool], [CategoryId], []),
     'createTransaction' : IDL.Func(
         [AccountId, CategoryId, IDL.Float64, IDL.Int],
         [TransactionId],
         [],
       ),
+    'deleteBudget' : IDL.Func([BudgetId], [], []),
     'getAccounts' : IDL.Func([], [IDL.Vec(Account)], ['query']),
+    'getBudget' : IDL.Func([BudgetId], [IDL.Opt(Budget)], ['query']),
+    'getBudgetSummary' : IDL.Func([IDL.Int], [BudgetSummary], ['query']),
+    'getBudgets' : IDL.Func([], [IDL.Vec(Budget)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getCategories' : IDL.Func([], [IDL.Vec(Category)], ['query']),
@@ -121,6 +184,11 @@ export const idlFactory = ({ IDL }) => {
       ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+    'updateBudget' : IDL.Func(
+        [BudgetId, IDL.Int, IDL.Vec(BudgetCategoryLimit), IDL.Float64],
+        [],
+        [],
+      ),
   });
 };
 

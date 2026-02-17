@@ -8,6 +8,7 @@ import AccountsPage from './pages/AccountsPage';
 import AccountDetailPage from './pages/AccountDetailPage';
 import TransactionsPage from './pages/TransactionsPage';
 import CategoriesPage from './pages/CategoriesPage';
+import BudgetsPage from './pages/BudgetsPage';
 import SettingsPage from './pages/SettingsPage';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/sonner';
@@ -54,6 +55,12 @@ const categoriesRoute = createRoute({
   component: CategoriesPage,
 });
 
+const budgetsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/budgets',
+  component: BudgetsPage,
+});
+
 const settingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/settings',
@@ -66,6 +73,7 @@ const routeTree = rootRoute.addChildren([
   accountDetailRoute,
   transactionsRoute,
   categoriesRoute,
+  budgetsRoute,
   settingsRoute,
 ]);
 
