@@ -1,0 +1,213 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Firefly Lite — Frontend Implementation Plan (Auth, Core Screens, Transactions UX, Dashboard, Theme)",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "summary": "Add Internet Identity authentication UX (sign-in/sign-out) with an authenticated-only app shell, per-user profile setup, and finance-data gating on auth state.",
+      "acceptanceCriteria": [
+        "Unauthenticated users can access only a sign-in screen/CTA and cannot read/write finance data.",
+        "Authenticated users see their own data only; data is isolated per Principal.",
+        "A clear sign-out action is available in the app UI."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "create",
+          "description": "Create the root app component that composes the existing Internet Identity + actor hooks into an authenticated-only routing layout: render a sign-in screen when unauthenticated, and render the main finance UI only when authenticated. Include a clear sign-out action that calls the existing identity clear method and clears React Query cache. Use the selected authorization component guidance for login/logout cache clearing and profile bootstrap; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/auth/LoginScreen.tsx",
+          "operation": "create",
+          "description": "Create a dedicated sign-in screen/CTA that uses the existing Internet Identity hook to initiate login, shows login-in-progress/error states, and explains that sign-in is required to access finance data. Use the selected authorization component guidance for the login button behavior and error handling; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/auth/ProfileSetupDialog.tsx",
+          "operation": "create",
+          "description": "Implement a first-login profile setup dialog that asks for a display name (English UI text) and saves it via the backend user-profile capability. Ensure the dialog only appears when authenticated and the profile query has completed (avoid modal flash). Use the selected authorization component guidance for getCallerUserProfile/saveCallerUserProfile and modal gating; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/auth/AuthGate.tsx",
+          "operation": "create",
+          "description": "Create an auth gate wrapper that (1) blocks all finance data queries when unauthenticated, (2) loads the caller profile and triggers the profile setup dialog when missing, and (3) provides a consistent unauthorized/guest experience. Use the selected authorization component guidance for handling trap/unauthorized errors gracefully; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/layout/AppShell.tsx",
+          "operation": "create",
+          "description": "Create the authenticated app shell (top bar + navigation) that displays the user’s profile name (not principal id) and includes a sign-out action. Use shadcn-ui components (e.g., navigation, button, dropdown, dialog, card) for consistent UI; verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Build core UI screens and navigation: Dashboard, Accounts (list + detail), Transactions (list + filters + search), Categories (list + totals by range), and Settings (per-user preferences).",
+      "acceptanceCriteria": [
+        "Navigation provides access to Dashboard, Accounts, Transactions, Categories, and Settings.",
+        "Accounts screen shows account list with balances and an account detail view with transaction list for that account.",
+        "Transactions screen supports list view with filters (date range, account, type, category) and search by description.",
+        "Categories screen lists categories and shows spend totals for a chosen date range.",
+        "Settings includes basic preferences UI (e.g., default currency text field) stored per user."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Wire new routes and navigation targets for Dashboard, Accounts, Account Detail, Transactions, Categories, and Settings inside the authenticated app shell. Ensure all these pages are reachable via the app navigation (no orphan views). Use shadcn-ui for layout primitives (cards/tabs/inputs) where helpful; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/DashboardPage.tsx",
+          "operation": "create",
+          "description": "Create the Dashboard page container that loads overview data and renders quick stats + category breakdown components. Use shadcn-ui cards/skeleton/empty-state patterns; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/AccountsPage.tsx",
+          "operation": "create",
+          "description": "Create the Accounts list page that shows accounts with balances and provides navigation into an Account detail view. Use shadcn-ui table/card components for consistent list styling; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/AccountDetailPage.tsx",
+          "operation": "create",
+          "description": "Create an Account detail page that shows account info and a transaction list filtered to that account, with convenient actions to add a transaction tied to the current account. Use shadcn-ui table/dialog components; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/TransactionsPage.tsx",
+          "operation": "create",
+          "description": "Create the Transactions list page with filters (date range, account, type, category) and search by description. Ensure filters are applied client-side or via available backend capabilities and are reflected immediately in the list. Use shadcn-ui form controls (select/input/date controls where available) and table; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/CategoriesPage.tsx",
+          "operation": "create",
+          "description": "Create the Categories page that lists categories and shows spend totals for a selected date range (default: current month). Use shadcn-ui cards/table and a simple date-range control; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/SettingsPage.tsx",
+          "operation": "create",
+          "description": "Create a Settings page with basic preferences UI including a default currency text field. Store preferences per user (scoped by authenticated principal) on the frontend (e.g., local storage keyed by principal) unless/ until a backend preference capability exists. Use shadcn-ui form components; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/hooks/useFinanceQueries.ts",
+          "operation": "create",
+          "description": "Add React Query hooks for loading accounts, categories, transactions, and date-range transactions using the existing actor hook. Ensure queries are disabled when unauthenticated (to satisfy gating) and are invalidated/refetched after mutations so lists/balances update without full page refresh. Use the selected authorization component guidance for authenticated-only data fetching and cache clearing on logout; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/lib/format.ts",
+          "operation": "create",
+          "description": "Add shared formatting utilities (currency text formatting using the user’s default currency preference, date formatting, amount formatting) used consistently across pages."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Implement transaction create/edit UX for income, expense, and transfer with validation, sensible defaults, and reactive updates of lists and balances.",
+      "acceptanceCriteria": [
+        "A transaction form allows selecting type (income/expense/transfer).",
+        "For expense: requires fromAccount, amount > 0, date; toAccount is not required.",
+        "For income: requires toAccount, amount > 0, date; fromAccount is not required.",
+        "For transfer: requires both fromAccount and toAccount (must be different), amount > 0, date.",
+        "Form displays inline validation errors and prevents submit until valid.",
+        "After save, the list and account balances update without a full page refresh."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/transactions/TransactionFormDialog.tsx",
+          "operation": "create",
+          "description": "Create a reusable transaction form in a dialog that supports income/expense/transfer modes, helpful defaults (e.g., default date = today, default currency from Settings), and inline validation with submit disabled until valid. Use shadcn-ui dialog, input, select, and form-message patterns; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/hooks/useTransactionMutations.ts",
+          "operation": "create",
+          "description": "Create React Query mutation hooks for creating/updating/deleting transactions (as supported by the backend capabilities) and ensure relevant queries are invalidated/refetched so transaction lists and account balances update without a full page refresh. Handle authorization failures gracefully (surface user-friendly errors). Use the selected authorization component guidance for handling trap/unauthorized errors; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/TransactionsPage.tsx",
+          "operation": "modify",
+          "description": "Wire the TransactionFormDialog into the Transactions page for creating and editing items (edit action on each row). Ensure the list updates immediately after save via query invalidation/optimistic UI as appropriate. Use shadcn-ui table/actions components; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/AccountDetailPage.tsx",
+          "operation": "modify",
+          "description": "Wire the TransactionFormDialog into the Account detail view with the current account preselected as from/to depending on transaction type. Ensure balances and the account’s transaction list update after save without full reload. Use shadcn-ui dialog/button components; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/backend.d.ts",
+          "operation": "modify",
+          "description": "Update the frontend backend type declarations to reflect the full transaction fields and capabilities required by the app UI (income/expense/transfer, description, notes, from/to accounts, optional category, paging, and mutation operations), so the TypeScript UI can safely call the backend actor with the expected shape."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "Add a spending overview dashboard with charts and quick stats (current month income/expense/net and top categories) including empty states.",
+      "acceptanceCriteria": [
+        "Dashboard shows current month totals for income, expense, and net.",
+        "Dashboard shows a breakdown chart by category for a selected date range (default: current month).",
+        "Dashboard shows a small list of top spending categories (e.g., top 5) with amounts.",
+        "If there is no data, the dashboard shows an empty state with a clear prompt to add an account/transaction."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/dashboard/QuickStats.tsx",
+          "operation": "create",
+          "description": "Create a quick-stats component that displays current-month income, expense, and net using loaded transactions (and user currency preference). Use shadcn-ui cards and consistent typography; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/dashboard/CategoryBreakdownChart.tsx",
+          "operation": "create",
+          "description": "Create a lightweight category breakdown chart component (no new charting dependency required) that renders category totals for the selected date range with a clear legend and accessible labels. Style using the app theme and Tailwind tokens; use shadcn-ui card/container components; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/dashboard/TopCategories.tsx",
+          "operation": "create",
+          "description": "Create a top-categories list (e.g., top 5 expense categories) for the selected date range with amounts and optional percent-of-total. Use shadcn-ui list/table styling; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/DashboardPage.tsx",
+          "operation": "modify",
+          "description": "Assemble the dashboard: show the generated hero illustration at the top (frontend/public/assets/generated/dashboard-hero.dim_1600x400.png), include a date-range selector defaulting to current month, render quick stats, category breakdown, and top categories. Add an empty state with a clear prompt to add an account/transaction when there is no data. Use shadcn-ui empty state patterns; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/public/assets/generated/dashboard-hero.dim_1600x400.png",
+          "operation": "create",
+          "description": "Add the generated dashboard header illustration asset at this exact path and wire it into the Dashboard page UI as a static image."
+        }
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "summary": "Apply a cohesive warm, finance-appropriate visual theme (non-blue/purple primary) across layout, typography, spacing, and component styling; include generated app icon usage.",
+      "acceptanceCriteria": [
+        "A coherent theme is applied across pages (e.g., warm neutral palette with green accents, consistent typography and card/table styles).",
+        "Key UI elements (nav, tables, forms, empty states) look consistent and polished.",
+        "Theme avoids blue/purple as the primary brand colors."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/index.css",
+          "operation": "create",
+          "description": "Create the Tailwind entry stylesheet imported by main.tsx, defining the app’s design tokens and base styles. Apply a warm neutral palette with green accents as the primary brand color (avoid blue/purple primary). Ensure consistent typography, spacing, card/table/form styling, and accessible focus rings."
+        },
+        {
+          "path": "frontend/tailwind.config.js",
+          "operation": "modify",
+          "description": "Adjust/extend theme tokens (including chart and sidebar tokens if needed) to support the warm neutral + green-accent theme consistently across the app without introducing a blue/purple primary palette."
+        },
+        {
+          "path": "frontend/src/components/layout/AppShell.tsx",
+          "operation": "modify",
+          "description": "Refine navigation/layout styling so nav, page headers, tables, forms, and empty states look consistent and polished across all screens using shadcn-ui primitives; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/public/assets/generated/app-icon.dim_512x512.png",
+          "operation": "create",
+          "description": "Add the generated minimal finance app icon asset at this exact path for use as the app favicon/application icon."
+        },
+        {
+          "path": "frontend/index.html",
+          "operation": "modify",
+          "description": "Wire the generated app icon (frontend/public/assets/generated/app-icon.dim_512x512.png) into the document head as the favicon/app icon so it appears in the browser tab and bookmarks."
+        }
+      ]
+    }
+  ]
+}

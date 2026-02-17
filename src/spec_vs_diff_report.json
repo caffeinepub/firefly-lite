@@ -1,0 +1,139 @@
+{
+  "kind": "spec_vs_diff_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-17T02:25:47.002Z",
+  "summary": "Diff adds a basic single-canister Motoko backend with per-Principal maps and a new frontend app shell with routing, auth gating, dashboard widgets, and CRUD creation flows. However, several core Firefly-like requirements are only partially implemented (notably backend CRUD completeness, transaction model/filters/editing, settings preferences, and required images). There are also extra access-control/admin-token and user-profile onboarding features not requested.",
+  "missing_requirements": [
+    {
+      "id": "REQ-2",
+      "requirement": "Accounts API must support create, list, get, update, archive/unarchive, and delete only if no transactions reference it; ownership enforced by caller Principal.",
+      "reason": "Backend shows createAccount and getAccounts, but no evidence of get/update/archive/delete logic or referential checks in the provided snippet.",
+      "evidence": [
+        "backend/main.mo (truncated)"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "requirement": "Categories API must support create, list, update, archive/unarchive, and delete only if unused; ownership enforced by caller Principal.",
+      "reason": "Backend shows createCategory and a truncated getCategories, but no evidence of update/archive/delete or unused checks.",
+      "evidence": [
+        "backend/main.mo (truncated)"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "requirement": "Transactions API must support create, list with paging, get, update, and delete; each transaction includes date, amount, currency (text), description, type (income/expense/transfer), fromAccount/toAccount as applicable, optional category, optional notes.",
+      "reason": "Backend Transaction type in snippet is limited to {id, accountId, categoryId, amount, date}; there is no evidence of currency/description/type/fromAccount/toAccount/notes fields, nor paging/get/update/delete APIs.",
+      "evidence": [
+        "backend/main.mo (truncated)"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "requirement": "Summary queries must exist for totals by month, totals by category over a date range, and current balances per account.",
+      "reason": "No evidence in backend snippet of summary query functions; frontend computes category breakdown client-side from raw transactions, not via backend summary APIs.",
+      "evidence": [
+        "backend/main.mo (truncated)",
+        "frontend/src/components/dashboard/QuickStats.tsx",
+        "frontend/src/components/dashboard/CategoryBreakdownChart.tsx",
+        "frontend/src/components/dashboard/TopCategories.tsx"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "requirement": "Transactions screen supports list view with filters (date range, account, type, category) and search by description.",
+      "reason": "TransactionsPage exists in routing, but no evidence of filters/search implementation in the provided diff summary; transaction model shown also lacks description/type fields needed for search/type filters.",
+      "evidence": [
+        "frontend/src/App.tsx",
+        "backend/main.mo (truncated)"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "requirement": "Settings includes basic preferences UI (e.g., default currency text field) stored per user.",
+      "reason": "SettingsPage is routed, but no SettingsPage implementation is shown; currency retrieval is implemented via localStorage lookup, but no UI/evidence of storing preferences per user is present in the diff excerpt.",
+      "evidence": [
+        "frontend/src/App.tsx",
+        "frontend/src/lib/format.ts"
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "requirement": "Transaction creation/editing UX supports income, expense, and transfers with validation rules per type (expense requires fromAccount; income requires toAccount; transfer requires both different).",
+      "reason": "TransactionFormDialog only supports selecting a single accountId and categoryId; it derives sign of amount from category.isExpense and has no type selector, no fromAccount/toAccount, and no transfer handling or edit flow evidence.",
+      "evidence": [
+        "frontend/src/components/transactions/TransactionFormDialog.tsx (truncated)"
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "requirement": "Form prevents submit until valid and shows inline errors; after save, list and account balances update without full refresh.",
+      "reason": "Inline validation exists, and queries are invalidated on createTransaction success, but required validation rules in REQ-4 are not met (no type/from/to). Therefore the acceptance criteria as stated are not fully implemented.",
+      "evidence": [
+        "frontend/src/components/transactions/TransactionFormDialog.tsx (truncated)",
+        "frontend/src/hooks/useFinanceQueries.ts (truncated)"
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "requirement": "Dashboard shows current month totals for income, expense, and net.",
+      "reason": "Dashboard supports selectable date ranges and QuickStats computes totals for the selected range; there is no explicit evidence that the default/current month totals are shown as a distinct requirement (though default dateRange is current-month). This is likely satisfied, but the diff is truncated; missing certainty on final rendered dashboard composition.",
+      "evidence": [
+        "frontend/src/pages/DashboardPage.tsx (truncated)",
+        "frontend/src/components/dashboard/QuickStats.tsx"
+      ]
+    }
+  ],
+  "hallucinated_features": [
+    {
+      "description": "Admin/role-based access control initialization using a secret URL parameter (caffeineAdminToken) and backend access-control mixins.",
+      "reason": "BuildRequest only requires ownership isolation by Principal and Internet Identity auth; it does not request admin roles, secret-token initialization, or an authorization subsystem beyond per-caller scoping.",
+      "evidence": [
+        "backend/main.mo (truncated)",
+        "frontend/src/hooks/useActor.ts"
+      ]
+    },
+    {
+      "description": "User profile onboarding flow (ProfileSetupDialog) and user profile APIs (get/save user profile).",
+      "reason": "BuildRequest does not mention user profiles; Settings preferences are requested instead. This adds additional concepts and UI flow not requested.",
+      "evidence": [
+        "backend/main.mo (truncated)",
+        "frontend/src/components/auth/AuthGate.tsx",
+        "frontend/src/components/auth/ProfileSetupDialog.tsx",
+        "frontend/src/hooks/useFinanceQueries.ts (truncated)"
+      ]
+    }
+  ],
+  "confidence": 0.66,
+  "changed_files": [
+    "all_files_summary.json",
+    "backend/main.mo",
+    "frontend-file-summaries.txt",
+    "frontend/index.css",
+    "frontend/index.html",
+    "frontend/src/App.tsx",
+    "frontend/src/components/auth/AuthGate.tsx",
+    "frontend/src/components/auth/LoginScreen.tsx",
+    "frontend/src/components/auth/ProfileSetupDialog.tsx",
+    "frontend/src/components/dashboard/CategoryBreakdownChart.tsx",
+    "frontend/src/components/dashboard/QuickStats.tsx",
+    "frontend/src/components/dashboard/TopCategories.tsx",
+    "frontend/src/components/layout/AppShell.tsx",
+    "frontend/src/components/transactions/TransactionFormDialog.tsx",
+    "frontend/src/hooks/useActor.ts",
+    "frontend/src/hooks/useFinanceQueries.ts",
+    "frontend/src/hooks/useInternetIdentity.ts",
+    "frontend/src/index.css",
+    "frontend/src/lib/format.ts",
+    "frontend/src/main.tsx",
+    "frontend/src/pages/AccountDetailPage.tsx",
+    "frontend/src/pages/AccountsPage.tsx",
+    "frontend/src/pages/CategoriesPage.tsx",
+    "frontend/src/pages/DashboardPage.tsx",
+    "frontend/src/pages/SettingsPage.tsx",
+    "frontend/src/pages/TransactionsPage.tsx",
+    "frontend/src/utils/urlParams.ts",
+    "frontend/tailwind.config.js",
+    "project_state.json"
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 3,
+  "summary": "Build an app similar to Firefly 3: a personal finance tracker for managing accounts, recording transactions, and viewing spending.",
+  "architectural_notes": [],
+  "known_issues": [],
+  "isFixRequest": false,
+  "imageRequirements": "## Required Images\n- Minimal finance app icon with a firefly-inspired abstract mark (app-icon.dim_512x512.png)\n- Subtle dashboard header illustration with warm neutral tones and green accents (dashboard-hero.dim_1600x400.png)",
+  "existing_features": [
+    {
+      "id": "feature-implement-internet-identity-sign-in-and-sign-out-and-scope-all-finance-data-to-the-currently-authenticated-user-principal",
+      "title": "Implement Internet Identity sign-in and sign-out, and scope all finance data to the currently authenticated user (Principal).",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-the-core-ui-screens-for-a-firefly-3-like-workflow-dashboard-overview-accounts-transactions-categories-and-settings",
+      "title": "Build the core UI screens for a Firefly 3-like workflow: Dashboard (overview), Accounts, Transactions, Categories, and Settings.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-transaction-creation-editing-ux-that-supports-income-expense-and-transfers-with-validation-and-helpful-defaults",
+      "title": "Implement transaction creation/editing UX that supports income, expense, and transfers, with validation and helpful defaults.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-spending-overview-dashboard-with-charts-and-quick-stats-current-month-income-expense-net-and-top-categories",
+      "title": "Add a spending overview dashboard with charts and quick stats (current month income/expense, net, and top categories).",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-initial-visual-design-direction-and-apply-it-consistently-across-the-app-layout-typography-spacing-and-component-styling-choose-a-distinctive-theme-appropriate-for-a-personal-finance-product-without-using-a-blue-purple-primary-palette",
+      "title": "Add initial visual design direction and apply it consistently across the app (layout, typography, spacing, and component styling). Choose a distinctive theme appropriate for a personal finance product without using a blue/purple primary palette.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Create a Firefly 3-like personal finance tracker app (accounts, transactions, spending overview).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Create backend data models and canister APIs to manage personal finance data: accounts, categories, transactions, and summary queries.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "status": "pending"
+    }
+  ],
+  "projectName": "Firefly Lite",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

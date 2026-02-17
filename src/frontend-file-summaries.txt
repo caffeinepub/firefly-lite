@@ -1,0 +1,21 @@
+{
+  "frontend/src/App.tsx": "Main application component with TanStack Router setup, authentication gating, and theme provider wrapping all routes (Dashboard, Accounts, Transactions, Categories, Settings).",
+  "frontend/src/components/auth/LoginScreen.tsx": "Full-screen login page with Internet Identity sign-in button, loading states, and error handling.",
+  "frontend/src/components/auth/ProfileSetupDialog.tsx": "Modal dialog for first-time user profile setup that collects the user's display name and saves it via backend.",
+  "frontend/src/components/auth/AuthGate.tsx": "Authentication wrapper that loads user profile, shows profile setup dialog when needed, and prevents modal flash during initialization.",
+  "frontend/src/components/layout/AppShell.tsx": "Main app layout with header navigation, user avatar dropdown, sign-out functionality, and footer with caffeine.ai attribution.",
+  "frontend/src/pages/DashboardPage.tsx": "Dashboard page with hero image, date range selector, quick stats, category breakdown chart, top categories list, and empty state for new users.",
+  "frontend/src/pages/AccountsPage.tsx": "Accounts list page with total balance card, account creation dialog, and table showing all accounts with balances and navigation to detail views.",
+  "frontend/src/pages/AccountDetailPage.tsx": "Account detail page showing account balance, transaction list filtered to the account, and quick-add transaction button with account preselected.",
+  "frontend/src/pages/TransactionsPage.tsx": "Transactions list page with search and filter controls (by account, category), transaction table, and new transaction dialog.",
+  "frontend/src/pages/CategoriesPage.tsx": "Categories management page with category creation dialog, spending totals by date range, and table showing all categories with type badges.",
+  "frontend/src/pages/SettingsPage.tsx": "Settings page for user preferences including default currency stored in localStorage scoped by principal.",
+  "frontend/src/components/transactions/TransactionFormDialog.tsx": "Reusable transaction form dialog with account/category/amount/date inputs, validation, and automatic expense/income handling based on category type.",
+  "frontend/src/components/dashboard/QuickStats.tsx": "Dashboard quick stats component displaying income, expenses, and net totals with color-coded cards.",
+  "frontend/src/components/dashboard/CategoryBreakdownChart.tsx": "Visual breakdown of spending by category with horizontal bars showing percentage and amounts.",
+  "frontend/src/components/dashboard/TopCategories.tsx": "Top 5 spending categories list with amounts and percentage of total expenses.",
+  "frontend/src/hooks/useFinanceQueries.ts": "React Query hooks for all backend operations including user profile, accounts, categories, and transactions with proper cache invalidation.",
+  "frontend/src/lib/format.ts": "Utility functions for formatting currency and dates consistently across the app using user's currency preference, with corrected Intl.DateTimeFormat usage.",
+  "frontend/src/index.css": "Global styles with warm neutral palette and green accent theme using OKLCH color system for both light and dark modes.",
+  "frontend/index.html": "HTML entry point with app icon favicon and root div for React mounting."
+}
