@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useGetCategories, useGetBudgets, useUpsertBudget, useGetTransactions } from '../hooks/useFinanceQueries';
+import { useGetCategories, useGetBudgets, useCreateBudget, useUpdateBudget, useGetTransactions } from '../hooks/useFinanceQueries';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,7 +17,8 @@ export default function BudgetsPage() {
   const { data: categories = [], isLoading: categoriesLoading } = useGetCategories();
   const { data: budgets = [], isLoading: budgetsLoading } = useGetBudgets();
   const { data: transactions = [], isLoading: transactionsLoading } = useGetTransactions();
-  const upsertBudget = useUpsertBudget();
+  const createBudgetMutation = useCreateBudget();
+  const updateBudgetMutation = useUpdateBudget();
 
   // Filter expense categories
   const expenseCategories = useMemo(() => {
@@ -142,11 +143,20 @@ export default function BudgetsPage() {
         }
       });
 
-      await upsertBudget.mutateAsync({
-        month: selectedMonthInt,
-        categoryLimits: limits,
-        carryOver,
-      });
+      if (currentBudget) {
+        await updateBudgetMutation.mutateAsync({
+          budgetId: currentBudget.id,
+          month: selectedMonthInt,
+          categoryLimits: limits,
+          carryOver,
+        });
+      } else {
+        await createBudgetMutation.mutateAsync({
+          month: selectedMonthInt,
+          categoryLimits: limits,
+          carryOver,
+        });
+      }
 
       toast.success('Budget saved successfully');
     } catch (error) {
@@ -161,6 +171,7 @@ export default function BudgetsPage() {
   });
 
   const isLoading = categoriesLoading || budgetsLoading || transactionsLoading;
+  const isSaving = createBudgetMutation.isPending || updateBudgetMutation.isPending;
 
   if (isLoading) {
     return (
@@ -347,9 +358,9 @@ export default function BudgetsPage() {
           </div>
 
           <div className="mt-6 flex justify-end">
-            <Button onClick={handleSaveBudget} disabled={upsertBudget.isPending}>
+            <Button onClick={handleSaveBudget} disabled={isSaving}>
               <Save className="mr-2 h-4 w-4" />
-              {upsertBudget.isPending ? 'Saving...' : 'Save Budget'}
+              {isSaving ? 'Saving...' : 'Save Budget'}
             </Button>
           </div>
         </CardContent>

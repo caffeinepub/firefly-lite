@@ -1,104 +1,206 @@
 {
   "kind": "build_request",
-  "title": "Add Bank Connections UI and Sync Workflow for Auto-Importing Transactions",
+  "title": "Add Reports module (list/create/detail) with dashboard card and navigation",
   "projectName": "Firefly Lite",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-18",
-      "text": "Add a new Bank Connections module that lets an authenticated user create, view, and remove bank connections, scoped to the current Internet Identity Principal.",
-      "target": "both",
+      "id": "REQ-1",
+      "text": "Implement backend persistence and CRUD APIs for a per-user Report entity, including: id (UUID string), reportType (enum), startDate/endDate (DateTime as Int milliseconds), filters (optional JSON stored as Text), createdAt/updatedAt (Int milliseconds), and a derived report name suitable for display in the Reports list.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-1"
         ],
         "quotes": [
-          "Can you add the ability to auto download transaction history from banks with a user interface to do so?"
+          "Entities:\n   - Report:\n       - id (UUID)\n       - reportType (Enum)\n       - startDate, endDate (DateTime)\n       - filters (JSON, optional)\n       - createdAt, updatedAt",
+          "Reports List Page:\n   - Table: report name, type, date range, created date"
         ]
       },
       "acceptanceCriteria": [
-        "Backend exposes canister APIs to create/list/delete bank connections and all data is scoped to the caller Principal (no cross-user access).",
-        "Frontend provides a Bank Connections screen that lists existing connections and allows adding and removing a connection with clear success/error feedback in English."
+        "Backend exposes functions to create, update, delete, fetch one report, and list reports for the authenticated caller.",
+        "Report IDs are unique UUID-like strings (Text) and stable across queries.",
+        "Report records include createdAt and updatedAt timestamps that update on write operations.",
+        "Report records include a displayable name (auto-generated if not user-provided) that can be shown in the list table.",
+        "All report data is isolated per caller (no cross-user access)."
       ]
     },
     {
-      "id": "REQ-19",
-      "text": "Implement a UI-driven transaction sync workflow for each bank connection, including a manual “Sync now” action and visible sync status (idle/in progress/last synced/last error).",
-      "target": "both",
+      "id": "REQ-2",
+      "text": "Implement backend query functions to generate report results for the supported report types using existing financial data (transactions/categories, invoices, budgets when available). Report generation must support date range and optional filters (category, account, tag) and return structured data suitable for charts/tables in the UI.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-1"
         ],
         "quotes": [
-          "add the ability to auto download transaction history from banks with a user interface to do so"
+          "Report Types:\n   - Profit & Loss (Income vs. Expenses)\n   - Cash Flow (Inflow vs. Outflow by month)\n   - Invoice Summary (Sent, Paid, Overdue totals)\n   - Payment Summary (By method, by month)\n   - Budget vs. Actual (if Budgets module is active)\n   - Category Breakdown (spending by category)",
+          "Report Create Page:\n   - Auto-generate report preview",
+          "Form fields:\n   - filters (optional: category, account, tag)"
         ]
       },
       "acceptanceCriteria": [
-        "Backend exposes a canister API to run a sync for a given connection and returns a structured result indicating how many transactions were created/ignored and any error message.",
-        "Frontend shows per-connection sync controls and status, including a disabled state while syncing and a toast/message on completion or failure."
+        "Backend provides a report-generation API that takes (reportType, startDate, endDate, optional filters) and returns computed totals + breakdowns.",
+        "Profit & Loss uses category.isExpense to compute income total vs expense total and a net value for the selected range.",
+        "Cash Flow returns month-bucketed inflow/outflow totals for the selected range.",
+        "Invoice Summary returns totals/counts grouped by invoice status (Sent, Paid, Overdue) for invoices in-range.",
+        "Budget vs Actual returns budgeted vs actual totals for the requested month(s) using the existing budgets data when present; if no budgets exist for the relevant period, returns an empty/zeroed result without trapping.",
+        "Category Breakdown returns expense totals by category for the selected range.",
+        "If payments data is not present in the backend, Payment Summary returns an empty result with a clear backend shape (no traps)."
       ]
     },
     {
-      "id": "REQ-20",
-      "text": "Provide an initial built-in “Mock Bank” provider that simulates downloading transaction history and imports transactions into existing Accounts/Categories/Transactions so the full end-to-end bank sync UX can be tested without external bank APIs.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "auto download transaction history from banks"
-        ]
-      },
-      "acceptanceCriteria": [
-        "A user can create a connection of type “Mock Bank” from the UI and run “Sync now”.",
-        "Syncing a “Mock Bank” connection creates new transactions visible in the existing Transactions page after sync completes.",
-        "Repeated syncs do not create unbounded duplicates (e.g., the backend uses a stable external-id/cursor concept per connection to avoid re-importing the same mock transactions)."
-      ]
-    },
-    {
-      "id": "REQ-21",
-      "text": "Add navigation and routing for the Bank Connections screen so it appears alongside the existing main sections (Dashboard, Accounts, Transactions, Categories, Budgets, Settings).",
+      "id": "REQ-3",
+      "text": "Add Reports routes to the TanStack Router and create three pages: Reports list page (/reports), report create page (/reports/new) and report detail page (/reports/$reportId), plus an edit route (/reports/$reportId/edit) reusing the create form for editing.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-1"
         ],
         "quotes": [
-          "with a user interface to do so"
+          "1. Reports List Page:",
+          "3. Report Create Page:",
+          "4. Report Detail Page:",
+          "Buttons: Edit, Delete, Download"
         ]
       },
       "acceptanceCriteria": [
-        "A new route exists for the Bank Connections screen and is accessible from the main navigation.",
-        "The Bank Connections screen is only reachable when authenticated (consistent with the existing app auth gating)."
+        "User can navigate to /reports to see the reports list page.",
+        "User can navigate to /reports/new to create a new report.",
+        "User can open a saved report at /reports/$reportId.",
+        "User can edit an existing report at /reports/$reportId/edit and save updates.",
+        "All new routes are protected by the existing authentication gate pattern."
       ]
     },
     {
-      "id": "REQ-22",
-      "text": "Add React Query hooks to call the new Bank Connections backend APIs (list connections, create/delete, sync, and refresh relevant cached data after sync).",
+      "id": "REQ-4",
+      "text": "Implement the Reports List Page UI with a table showing: report name, type, date range, created date; include filters for report type and date range; and row/actions for View, Download, Delete plus a top-level “Create New Report” action.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-1"
         ],
         "quotes": [
-          "auto download transaction history from banks with a user interface"
+          "1. Reports List Page:\n   - Table: report name, type, date range, created date\n   - Filters: report type, date range\n   - Actions: View, Download, Delete, Create New Report"
         ]
       },
       "acceptanceCriteria": [
-        "Frontend has dedicated React Query hooks for bank connections and syncing, following the same pattern as existing finance hooks.",
-        "After a successful sync, the Transactions (and Accounts, if affected) queries are invalidated/refetched so the UI reflects newly imported transactions without a manual refresh."
+        "Reports list table renders report name, report type, date range, and created date in English formatting.",
+        "Report type filter narrows the table results.",
+        "Date range filter narrows the table results (applies to report.startDate/endDate).",
+        "View navigates to the report detail route.",
+        "Delete prompts for confirmation and removes the report on success with an English toast.",
+        "Download triggers PDF download for that report (see PDF requirement).",
+        "“Create New Report” navigates to /reports/new."
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Implement the Report Create/Edit Page UI with a form containing reportType (enum), startDate, endDate, and optional filters (category, account, tag), and auto-generate a live report preview based on the current form values. Provide buttons: Save and Download PDF.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "3. Report Create Page:\n   - Form fields:\n       - reportType (Enum)\n       - startDate, endDate (DateTime)\n       - filters (optional: category, account, tag)\n   - Auto-generate report preview\n   - Buttons: Save, Download PDF"
+        ]
+      },
+      "acceptanceCriteria": [
+        "User can select a report type from the specified enum values.",
+        "User can set start and end date/time, and validation prevents endDate < startDate with an English error message.",
+        "User can optionally set filters (category, account, tag) using existing categories/accounts/tags data.",
+        "A preview section updates automatically when form values change (with loading state while generating).",
+        "Save creates a new report (or updates when editing) and navigates to the report detail page on success.",
+        "Download PDF works even before saving (using the current preview data) and downloads/prints an English report PDF."
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "text": "Implement the Report Detail Page UI with a summary section and a dynamic body (charts or tables depending on report type) showing totals and breakdowns. Include actions: Edit, Delete, Download.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "4. Report Detail Page:\n   - Summary section\n   - Charts or tables depending on report type\n   - Totals and breakdowns\n   - Buttons: Edit, Delete, Download"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Detail page shows a summary including report name, type, and date range.",
+        "Detail page renders a table and/or simple charts appropriate to each report type using the generated report results.",
+        "Edit navigates to the edit route with the report pre-filled.",
+        "Delete prompts for confirmation, deletes the report, and returns to the reports list with an English toast.",
+        "Download exports the currently viewed report to PDF in English."
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "text": "Add React Query hooks for Reports in frontend/src/hooks/useFinanceQueries.ts for listing reports, fetching a report, creating/updating/deleting reports, and generating report preview/results, wired to the backend actor APIs.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Create a Reports module..."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Reports hooks exist and follow the existing queryKey and invalidation patterns used elsewhere in useFinanceQueries.ts.",
+        "Mutations invalidate the reports list and affected report detail queries.",
+        "UI pages use the hooks rather than calling the actor directly."
+      ]
+    },
+    {
+      "id": "REQ-8",
+      "text": "Add a “Reports” dashboard card to the existing Dashboard page showing: last report type run, most used report type, and a “Run New Report” button that navigates to the report create page.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "7. Dashboard Card:\n   - Add “Reports” card showing:\n       - Last report type run\n       - Most used report type\n       - Button: “Run New Report”"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Dashboard displays a Reports card alongside existing cards in the Financial Overview grid.",
+        "The card computes “Last report type run” from the most recently created report.",
+        "The card computes “Most used report type” from frequency across saved reports (ties handled deterministically, e.g., alphabetical or most-recent).",
+        "“Run New Report” navigates to /reports/new."
+      ]
+    },
+    {
+      "id": "REQ-9",
+      "text": "Add “Reports” to the main navigation under the Financial section conceptually (alongside other finance items) with a Bar Chart icon, linking to /reports.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "8. Sidebar Navigation:\n   - Add “Reports” under Financial section with a Bar Chart icon"
+        ]
+      },
+      "acceptanceCriteria": [
+        "App header navigation includes a Reports item that navigates to /reports.",
+        "Reports nav item uses a bar chart icon from lucide-react.",
+        "Active state styling works consistently with existing nav items."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor with all logic in backend/main.mo; add backend/migration.mo changes only if stable state layout requires an upgrade-safe migration.",
-    "Do not edit files under frontend/src/components/ui or any paths listed as immutable (compose existing UI components instead).",
-    "Do not add third-party bank aggregation integrations (e.g., Plaid) unless the user provides the required provider, endpoints, and credentials; implement an internal mock provider to validate the auto-sync UX end-to-end."
+    "Use English for all user-facing text.",
+    "Do not implement any field service logic.",
+    "Backend must remain a single Motoko actor in backend/main.mo; only add backend/migration.mo if required for stable state upgrades.",
+    "Do not edit files under frontend/src/components/ui or any other immutablePaths listed in SYSTEM_CONTEXT."
   ],
   "nonGoals": [
-    "Implementing real bank OAuth/Open Banking integrations for specific institutions without user-provided API details.",
-    "Real-time/background syncing while the app is closed (no push notifications or background jobs beyond user-initiated sync in the UI)."
+    "Implementing the Payments module (only referenced as a report type input source).",
+    "Integrating third-party PDF services or external charting/PDF libraries beyond existing client-side patterns.",
+    "Real-time updates (WebSockets) or external databases."
   ],
   "imageRequirements": {
     "required": [],

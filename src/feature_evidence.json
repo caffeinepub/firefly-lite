@@ -2,11 +2,13 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-add-a-new-bank-connections-module-that-lets-an-authenticated-user-create-view-and-remove-bank-connections-scoped-to-the-current-internet-identity-principal",
-      "featureTitle": "Add a new Bank Connections module that lets an authenticated user create, view, and remove bank connections, scoped to the current Internet Identity Principal.",
+      "featureId": "feature-add-reports-routes-to-the-tanstack-router-and-create-three-pages-reports-list-page-reports-report-create-page-reports-new-and-report-detail-page-reports-reportid-plus-an-edit-route-reports-reportid-edit-reusing-the-create-form-for-editing",
+      "featureTitle": "Add Reports routes to the TanStack Router and create three pages: Reports list page (/reports), report create page (/reports/new) and report detail page (/reports/$reportId), plus an edit route (/reports/$reportId/edit) reusing the create form for editing.",
       "files": [
-        "frontend/src/hooks/useFinanceQueries.ts",
-        "frontend/src/pages/BankConnectionsPage.tsx"
+        "frontend/src/App.tsx",
+        "frontend/src/pages/ReportDetailPage.tsx",
+        "frontend/src/pages/ReportFormPage.tsx",
+        "frontend/src/pages/ReportsPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -17,16 +19,17 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-18"
+        "REQ-3"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-implement-a-ui-driven-transaction-sync-workflow-for-each-bank-connection-including-a-manual-sync-now-action-and-visible-sync-status-idle-in-progress-last-synced-last-error",
-      "featureTitle": "Implement a UI-driven transaction sync workflow for each bank connection, including a manual “Sync now” action and visible sync status (idle/in progress/last synced/last error).",
+      "featureId": "feature-implement-the-reports-list-page-ui-with-a-table-showing-report-name-type-date-range-created-date-include-filters-for-report-type-and-date-range-and-row-actions-for-view-download-delete-plus-a-top-level-create-new-report-action",
+      "featureTitle": "Implement the Reports List Page UI with a table showing: report name, type, date range, created date; include filters for report type and date range; and row/actions for View, Download, Delete plus a top-level “Create New Report” action.",
       "files": [
-        "frontend/src/hooks/useFinanceQueries.ts",
-        "frontend/src/pages/BankConnectionsPage.tsx"
+        "frontend/src/components/reports/ReportResultsView.tsx",
+        "frontend/src/pages/ReportsPage.tsx",
+        "frontend/src/utils/reportPdf.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -37,16 +40,16 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-19"
+        "REQ-4"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-provide-an-initial-built-in-mock-bank-provider-that-simulates-downloading-transaction-history-and-imports-transactions-into-existing-accounts-categories-transactions-so-the-full-end-to-end-bank-sync-ux-can-be-tested-without-external-bank-apis",
-      "featureTitle": "Provide an initial built-in “Mock Bank” provider that simulates downloading transaction history and imports transactions into existing Accounts/Categories/Transactions so the full end-to-end bank sync UX can be tested without external bank APIs.",
+      "featureId": "feature-implement-the-report-create-edit-page-ui-with-a-form-containing-reporttype-enum-startdate-enddate-and-optional-filters-category-account-tag-and-auto-generate-a-live-report-preview-based-on-the-current-form-values-provide-buttons-save-and-download-pdf",
+      "featureTitle": "Implement the Report Create/Edit Page UI with a form containing reportType (enum), startDate, endDate, and optional filters (category, account, tag), and auto-generate a live report preview based on the current form values. Provide buttons: Save and Download PDF.",
       "files": [
-        "frontend/src/hooks/useFinanceQueries.ts",
-        "frontend/src/pages/BankConnectionsPage.tsx"
+        "frontend/src/components/reports/ReportResultsView.tsx",
+        "frontend/src/pages/ReportFormPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -57,13 +60,75 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-20"
+        "REQ-5"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-navigation-and-routing-for-the-bank-connections-screen-so-it-appears-alongside-the-existing-main-sections-dashboard-accounts-transactions-categories-budgets-settings",
-      "featureTitle": "Add navigation and routing for the Bank Connections screen so it appears alongside the existing main sections (Dashboard, Accounts, Transactions, Categories, Budgets, Settings).",
+      "featureId": "feature-implement-the-report-detail-page-ui-with-a-summary-section-and-a-dynamic-body-charts-or-tables-depending-on-report-type-showing-totals-and-breakdowns-include-actions-edit-delete-download",
+      "featureTitle": "Implement the Report Detail Page UI with a summary section and a dynamic body (charts or tables depending on report type) showing totals and breakdowns. Include actions: Edit, Delete, Download.",
+      "files": [
+        "frontend/src/pages/ReportDetailPage.tsx",
+        "frontend/src/pages/ReportsPage.tsx",
+        "frontend/src/utils/reportPdf.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-6"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-react-query-hooks-for-reports-in-frontend-src-hooks-usefinancequeries-ts-for-listing-reports-fetching-a-report-creating-updating-deleting-reports-and-generating-report-preview-results-wired-to-the-backend-actor-apis",
+      "featureTitle": "Add React Query hooks for Reports in frontend/src/hooks/useFinanceQueries.ts for listing reports, fetching a report, creating/updating/deleting reports, and generating report preview/results, wired to the backend actor APIs.",
+      "files": [
+        "frontend/src/hooks/useFinanceQueries.ts",
+        "frontend/src/pages/ReportFormPage.tsx",
+        "frontend/src/pages/ReportsPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-7"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-a-reports-dashboard-card-to-the-existing-dashboard-page-showing-last-report-type-run-most-used-report-type-and-a-run-new-report-button-that-navigates-to-the-report-create-page",
+      "featureTitle": "Add a “Reports” dashboard card to the existing Dashboard page showing: last report type run, most used report type, and a “Run New Report” button that navigates to the report create page.",
+      "files": [
+        "frontend/src/components/dashboard/ReportsCard.tsx",
+        "frontend/src/pages/DashboardPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-8"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-reports-to-the-main-navigation-under-the-financial-section-conceptually-alongside-other-finance-items-with-a-bar-chart-icon-linking-to-reports",
+      "featureTitle": "Add “Reports” to the main navigation under the Financial section conceptually (alongside other finance items) with a Bar Chart icon, linking to /reports.",
       "files": [
         "frontend/src/App.tsx",
         "frontend/src/components/layout/AppShell.tsx"
@@ -77,27 +142,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-21"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-react-query-hooks-to-call-the-new-bank-connections-backend-apis-list-connections-create-delete-sync-and-refresh-relevant-cached-data-after-sync",
-      "featureTitle": "Add React Query hooks to call the new Bank Connections backend APIs (list connections, create/delete, sync, and refresh relevant cached data after sync).",
-      "files": [
-        "frontend/src/hooks/useFinanceQueries.ts",
-        "frontend/src/pages/BankConnectionsPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-22"
+        "REQ-9"
       ],
       "confidence": "high"
     }

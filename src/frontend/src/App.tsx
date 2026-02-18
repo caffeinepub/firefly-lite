@@ -10,6 +10,12 @@ import TransactionsPage from './pages/TransactionsPage';
 import CategoriesPage from './pages/CategoriesPage';
 import BudgetsPage from './pages/BudgetsPage';
 import BankConnectionsPage from './pages/BankConnectionsPage';
+import InvoicesPage from './pages/InvoicesPage';
+import InvoiceFormPage from './pages/InvoiceFormPage';
+import InvoiceDetailPage from './pages/InvoiceDetailPage';
+import ReportsPage from './pages/ReportsPage';
+import ReportFormPage from './pages/ReportFormPage';
+import ReportDetailPage from './pages/ReportDetailPage';
 import SettingsPage from './pages/SettingsPage';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/sonner';
@@ -68,6 +74,54 @@ const bankConnectionsRoute = createRoute({
   component: BankConnectionsPage,
 });
 
+const invoicesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/invoices',
+  component: InvoicesPage,
+});
+
+const invoiceNewRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/invoices/new',
+  component: InvoiceFormPage,
+});
+
+const invoiceDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/invoices/$invoiceId',
+  component: InvoiceDetailPage,
+});
+
+const invoiceEditRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/invoices/$invoiceId/edit',
+  component: InvoiceFormPage,
+});
+
+const reportsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/reports',
+  component: ReportsPage,
+});
+
+const reportNewRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/reports/new',
+  component: ReportFormPage,
+});
+
+const reportDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/reports/$reportId',
+  component: ReportDetailPage,
+});
+
+const reportEditRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/reports/$reportId/edit',
+  component: ReportFormPage,
+});
+
 const settingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/settings',
@@ -82,6 +136,14 @@ const routeTree = rootRoute.addChildren([
   categoriesRoute,
   budgetsRoute,
   bankConnectionsRoute,
+  invoicesRoute,
+  invoiceNewRoute,
+  invoiceDetailRoute,
+  invoiceEditRoute,
+  reportsRoute,
+  reportNewRoute,
+  reportDetailRoute,
+  reportEditRoute,
   settingsRoute,
 ]);
 

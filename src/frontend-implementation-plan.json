@@ -1,103 +1,194 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Firefly Lite — Bank Connections UI and Manual Sync Workflow",
+  "title": "Reports module (routes, pages, hooks, dashboard card, navigation)",
   "requirements": [
     {
-      "id": "REQ-18",
-      "summary": "Add a Bank Connections screen to create, list, and remove bank connections for the authenticated user.",
+      "id": "REQ-3",
+      "summary": "Add TanStack Router routes for Reports list/create/detail/edit pages under the existing authenticated app shell.",
       "acceptanceCriteria": [
-        "Frontend provides a Bank Connections screen that lists existing connections and allows adding and removing a connection with clear success/error feedback in English."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/BankConnectionsPage.tsx",
-          "operation": "create",
-          "description": "Create the Bank Connections screen UI that lists connections, provides an add-connection form (name + provider/type), and supports removing a connection with clear English success/error feedback using existing shadcn-ui components (do not edit ui components). Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/hooks/useFinanceQueries.ts",
-          "operation": "modify",
-          "description": "Add React Query query/mutation hooks for bank connections list/create/delete that call the backend actor methods and provide consistent loading/error states with existing finance hooks. Verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-19",
-      "summary": "Add per-connection manual sync controls and visible sync status (idle/in progress/last synced/last error), including disabled state while syncing and completion/failure messages.",
-      "acceptanceCriteria": [
-        "Frontend shows per-connection sync controls and status, including a disabled state while syncing and a toast/message on completion or failure."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/BankConnectionsPage.tsx",
-          "operation": "modify",
-          "description": "Implement per-connection 'Sync now' UI and status rendering (idle/in progress/last synced/last error). Disable sync controls while syncing, show a toast/message on completion or failure (e.g., via sonner), and optionally refresh the list after sync to reflect updated status. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/hooks/useFinanceQueries.ts",
-          "operation": "modify",
-          "description": "Add a React Query mutation hook for syncing a bank connection. Ensure mutation handles in-flight state and exposes success/error callbacks suitable for toast feedback. Verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-20",
-      "summary": "Expose the built-in “Mock Bank” provider option in the UI so users can create a mock connection and run sync to see imported transactions appear.",
-      "acceptanceCriteria": [
-        "A user can create a connection of type “Mock Bank” from the UI and run “Sync now”.",
-        "Syncing a “Mock Bank” connection creates new transactions visible in the existing Transactions page after sync completes."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/BankConnectionsPage.tsx",
-          "operation": "modify",
-          "description": "Include “Mock Bank” as a selectable provider/type when creating a new connection, and ensure the UI guides the user to run 'Sync now' afterward. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/hooks/useFinanceQueries.ts",
-          "operation": "modify",
-          "description": "After a successful sync mutation, invalidate/refetch cached finance queries so newly imported transactions appear in the existing Transactions page without manual refresh (at minimum invalidate ['transactions'] and ['accounts'] where applicable). Verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-21",
-      "summary": "Add routing and navigation entry for the Bank Connections screen alongside existing main sections, reachable only when authenticated.",
-      "acceptanceCriteria": [
-        "A new route exists for the Bank Connections screen and is accessible from the main navigation.",
-        "The Bank Connections screen is only reachable when authenticated (consistent with the existing app auth gating)."
+        "User can navigate to /reports to see the reports list page.",
+        "User can navigate to /reports/new to create a new report.",
+        "User can open a saved report at /reports/$reportId.",
+        "User can edit an existing report at /reports/$reportId/edit and save updates.",
+        "All new routes are protected by the existing authentication gate pattern."
       ],
       "file_operations": [
         {
           "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Register a new TanStack Router route for the Bank Connections page (e.g., '/bank-connections') and include it in the route tree so it is navigable when authenticated (leveraging existing app-wide auth gating). Verify the component's usage instructions before implementing."
+          "description": "Register /reports, /reports/new, /reports/$reportId, and /reports/$reportId/edit routes in the existing TanStack Router routeTree and import the new pages; ensure they remain behind the existing authentication gating (LoginScreen + AuthGate)."
         },
         {
-          "path": "frontend/src/components/layout/AppShell.tsx",
-          "operation": "modify",
-          "description": "Add a 'Bank Connections' item to the main navigation alongside Dashboard/Accounts/Transactions/Categories/Budgets/Settings, using existing button/link styling and icons. Verify the component's usage instructions before implementing."
+          "path": "frontend/src/pages/ReportsPage.tsx",
+          "operation": "create",
+          "description": "Create the Reports list page for /reports (table, filters, and actions) using existing app patterns."
+        },
+        {
+          "path": "frontend/src/pages/ReportFormPage.tsx",
+          "operation": "create",
+          "description": "Create a shared Report Create/Edit page used by /reports/new and /reports/$reportId/edit (form + live preview + save/download actions)."
+        },
+        {
+          "path": "frontend/src/pages/ReportDetailPage.tsx",
+          "operation": "create",
+          "description": "Create the Report Detail page for /reports/$reportId (summary + results + edit/delete/download actions)."
         }
       ]
     },
     {
-      "id": "REQ-22",
-      "summary": "Add dedicated React Query hooks for bank connection APIs (list/create/delete/sync) and refresh relevant cached data after sync.",
+      "id": "REQ-4",
+      "summary": "Build the Reports List Page with table columns, filters, and View/Download/Delete/Create actions using English formatting and toasts.",
       "acceptanceCriteria": [
-        "Frontend has dedicated React Query hooks for bank connections and syncing, following the same pattern as existing finance hooks.",
-        "After a successful sync, the Transactions (and Accounts, if affected) queries are invalidated/refetched so the UI reflects newly imported transactions without a manual refresh."
+        "Reports list table renders report name, report type, date range, and created date in English formatting.",
+        "Report type filter narrows the table results.",
+        "Date range filter narrows the table results (applies to report.startDate/endDate).",
+        "View navigates to the report detail route.",
+        "Delete prompts for confirmation and removes the report on success with an English toast.",
+        "Download triggers PDF download for that report (see PDF requirement).",
+        "“Create New Report” navigates to /reports/new."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/ReportsPage.tsx",
+          "operation": "modify",
+          "description": "Implement the Reports list UI: fetch reports via Reports React Query hooks, render a shadcn Table with columns (name, type, date range, created date using formatDate), add reportType + date range filters, and wire row actions (View -> router navigate, Download -> report PDF utility, Delete -> confirmation dialog + toast success/error)."
+        },
+        {
+          "path": "frontend/src/utils/reportPdf.ts",
+          "operation": "create",
+          "description": "Add a client-side HTML-based Report PDF/print download utility following the existing invoice PDF generation pattern (English labels, uses formatDate/formatCurrency as applicable) for use by list/detail/create pages."
+        },
+        {
+          "path": "frontend/src/components/reports/ReportResultsView.tsx",
+          "operation": "create",
+          "description": "Add a reusable results renderer that can display structured report results as simple tables and lightweight inline visuals (no new external charting libraries), used by preview and detail pages."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "Build the Report Create/Edit form with validation, optional category/account/tag filters, live preview generation, and Save/Download PDF actions.",
+      "acceptanceCriteria": [
+        "User can select a report type from the specified enum values.",
+        "User can set start and end date/time, and validation prevents endDate < startDate with an English error message.",
+        "User can optionally set filters (category, account, tag) using existing categories/accounts/tags data.",
+        "A preview section updates automatically when form values change (with loading state while generating).",
+        "Save creates a new report (or updates when editing) and navigates to the report detail page on success.",
+        "Download PDF works even before saving (using the current preview data) and downloads/prints an English report PDF."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/ReportFormPage.tsx",
+          "operation": "modify",
+          "description": "Implement the create/edit form: reportType select (from backend ReportType enum), start/end date-time inputs with validation (endDate >= startDate) and English inline error, optional filters using existing categories/accounts/tags queries (including TagMultiSelect for tags), live preview using a generate-report hook with debounce/loading state, Save (create/update) then navigate to /reports/$reportId, and Download PDF using reportPdf with current preview even when unsaved."
+        },
+        {
+          "path": "frontend/src/components/tags/TagMultiSelect.tsx",
+          "operation": "modify",
+          "description": "Adjust/extend TagMultiSelect consumption surface only if needed to support the report form filter UX (e.g., controlled value props); do not change files under frontend/src/components/ui. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/reports/ReportResultsView.tsx",
+          "operation": "modify",
+          "description": "Ensure the results renderer supports the preview use-case (loading/empty states, English labels) and can render at least the currently supported report types present in the frontend backend.d.ts (e.g., incomeVsExpenses and categoryBreakdown), while remaining extensible for additional types later."
+        }
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "summary": "Build the Report Detail Page with summary, dynamic results (tables/charts), and Edit/Delete/Download actions.",
+      "acceptanceCriteria": [
+        "Detail page shows a summary including report name, type, and date range.",
+        "Detail page renders a table and/or simple charts appropriate to each report type using the generated report results.",
+        "Edit navigates to the edit route with the report pre-filled.",
+        "Delete prompts for confirmation, deletes the report, and returns to the reports list with an English toast.",
+        "Download exports the currently viewed report to PDF in English."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/ReportDetailPage.tsx",
+          "operation": "modify",
+          "description": "Implement detail view: fetch report by route param using Reports hooks, show summary (name/type/date range with English formatting), load generated results via generate-report hook, render with ReportResultsView, and wire Edit/Delete/Download actions (Edit -> /reports/$reportId/edit, Delete -> confirmation + toast then navigate /reports, Download -> reportPdf using current results)."
+        },
+        {
+          "path": "frontend/src/pages/ReportsPage.tsx",
+          "operation": "modify",
+          "description": "Ensure navigation into detail page works via View action and that delete success navigates/updates state appropriately when deletion occurs from detail vs list (consistent English toast messaging)."
+        },
+        {
+          "path": "frontend/src/utils/reportPdf.ts",
+          "operation": "modify",
+          "description": "Extend the report PDF generator to support exporting from the detail page (include summary + rendered tables in English and a deterministic filename)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "summary": "Add React Query hooks in useFinanceQueries.ts for Reports list/detail CRUD and report generation/preview, wired through the backend actor.",
+      "acceptanceCriteria": [
+        "Reports hooks exist and follow the existing queryKey and invalidation patterns used elsewhere in useFinanceQueries.ts.",
+        "Mutations invalidate the reports list and affected report detail queries.",
+        "UI pages use the hooks rather than calling the actor directly."
       ],
       "file_operations": [
         {
           "path": "frontend/src/hooks/useFinanceQueries.ts",
           "operation": "modify",
-          "description": "Implement dedicated hooks: useGetBankConnections, useCreateBankConnection, useDeleteBankConnection, and useSyncBankConnection, mirroring the patterns used by existing hooks (actor dependency gating + query invalidation). Ensure sync triggers invalidation/refetch of transactions (and accounts, if affected) and bank connections status. Verify the component's usage instructions before implementing."
+          "description": "Add Reports hooks following existing patterns: list reports, fetch one report, create/update/delete mutations with correct queryKey usage and invalidations, and a generate-report (preview/results) query/mutation that calls the backend actor's report generation capability when available; ensure pages (ReportsPage, ReportFormPage, ReportDetailPage, Dashboard Reports card) use these hooks instead of direct actor calls."
         },
         {
-          "path": "frontend/src/pages/BankConnectionsPage.tsx",
+          "path": "frontend/src/pages/ReportsPage.tsx",
           "operation": "modify",
-          "description": "Wire the Bank Connections screen to the new hooks, ensuring cached data updates after create/delete/sync and the UI stays consistent (loading states, disabled actions, and English error messages). Verify the component's usage instructions before implementing."
+          "description": "Refactor/ensure the list page uses the new Reports hooks (list + delete) and relies on invalidation for refresh rather than manual refetching."
+        },
+        {
+          "path": "frontend/src/pages/ReportFormPage.tsx",
+          "operation": "modify",
+          "description": "Refactor/ensure create/edit uses the new Reports hooks for create/update and for generating preview/results, including loading and error display in English."
+        }
+      ]
+    },
+    {
+      "id": "REQ-8",
+      "summary": "Add a Reports dashboard card showing last report type run, most used type, and a Run New Report button.",
+      "acceptanceCriteria": [
+        "Dashboard displays a Reports card alongside existing cards in the Financial Overview grid.",
+        "The card computes “Last report type run” from the most recently created report.",
+        "The card computes “Most used report type” from frequency across saved reports (ties handled deterministically, e.g., alphabetical or most-recent).",
+        "“Run New Report” navigates to /reports/new."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/dashboard/ReportsCard.tsx",
+          "operation": "create",
+          "description": "Create a Dashboard Reports card component that uses the Reports list hook to compute (a) last report type run by most recent createdAt and (b) most used report type via deterministic frequency calculation; include an English 'Run New Report' button that navigates to /reports/new."
+        },
+        {
+          "path": "frontend/src/pages/DashboardPage.tsx",
+          "operation": "modify",
+          "description": "Add the ReportsCard into the existing Financial Overview grid alongside current cards, maintaining consistent layout and English text."
+        }
+      ]
+    },
+    {
+      "id": "REQ-9",
+      "summary": "Add a Reports item to the main navigation linking to /reports, using a lucide-react bar chart icon and consistent active styling.",
+      "acceptanceCriteria": [
+        "App header navigation includes a Reports item that navigates to /reports.",
+        "Reports nav item uses a bar chart icon from lucide-react.",
+        "Active state styling works consistently with existing nav items."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/layout/AppShell.tsx",
+          "operation": "modify",
+          "description": "Add a 'Reports' nav item under the existing finance-related items, linking to /reports, using a bar chart icon from lucide-react, and relying on the existing currentPath active-state logic for consistent styling."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Ensure the /reports route family is present so the navigation item resolves and active-state matching works as expected."
         }
       ]
     }

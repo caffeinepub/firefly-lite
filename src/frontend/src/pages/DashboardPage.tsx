@@ -6,6 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import QuickStats from '../components/dashboard/QuickStats';
 import CategoryBreakdownChart from '../components/dashboard/CategoryBreakdownChart';
 import TopCategories from '../components/dashboard/TopCategories';
+import InvoicesCard from '../components/dashboard/InvoicesCard';
+import ReportsCard from '../components/dashboard/ReportsCard';
 import { Plus, Wallet, ArrowLeftRight } from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
 import { startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths } from 'date-fns';
@@ -102,9 +104,14 @@ export default function DashboardPage() {
 
       <QuickStats transactions={transactions} categories={categories} />
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <CategoryBreakdownChart transactions={transactions} categories={categories} />
         <TopCategories transactions={transactions} categories={categories} />
+        <InvoicesCard />
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <ReportsCard />
       </div>
     </div>
   );

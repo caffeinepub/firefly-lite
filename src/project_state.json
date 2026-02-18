@@ -1,149 +1,69 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 9,
-  "summary": "Build an app similar to Firefly 3: a personal finance tracker for managing accounts, recording transactions, and viewing spending.",
+  "projectStateVersion": 3,
+  "summary": "Accounting software for business and home use (no field service logic), expanding financial features with Payments and Reports modules.",
   "architectural_notes": [
-    "Future features should be implemented modularly (as separable modules/segments per feature, e.g., Budgets/Goals/Reports as independently deliverable units).",
-    "User requested next priorities: Bulk editing (AR-10), Tags (AR-11), and CSV import/export (AR-12)."
+    "No field service logic; app is for accounting in business and home settings.",
+    "Role-based access: Admin (full) and Viewer (read-only)."
   ],
   "known_issues": [
-    "Automated build failed with generic error ('AI was unable to implement your request') when attempting to generate the Budgets feature/module."
+    "Prior attempt to implement the Payments module failed due to prompt complexity; may require breaking the build into smaller steps."
   ],
   "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-implement-internet-identity-sign-in-and-sign-out-and-scope-all-finance-data-to-the-currently-authenticated-user-principal",
-      "title": "Implement Internet Identity sign-in and sign-out, and scope all finance data to the currently authenticated user (Principal).",
-      "reqIds": [
-        "REQ-1"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-build-the-core-ui-screens-for-a-firefly-3-like-workflow-dashboard-overview-accounts-transactions-categories-and-settings",
-      "title": "Build the core UI screens for a Firefly 3-like workflow: Dashboard (overview), Accounts, Transactions, Categories, and Settings.",
+      "id": "feature-add-reports-routes-to-the-tanstack-router-and-create-three-pages-reports-list-page-reports-report-create-page-reports-new-and-report-detail-page-reports-reportid-plus-an-edit-route-reports-reportid-edit-reusing-the-create-form-for-editing",
+      "title": "Add Reports routes to the TanStack Router and create three pages: Reports list page (/reports), report create page (/reports/new) and report detail page (/reports/$reportId), plus an edit route (/reports/$reportId/edit) reusing the create form for editing.",
       "reqIds": [
         "REQ-3"
       ],
       "version": 1
     },
     {
-      "id": "feature-implement-transaction-creation-editing-ux-that-supports-income-expense-and-transfers-with-validation-and-helpful-defaults",
-      "title": "Implement transaction creation/editing UX that supports income, expense, and transfers, with validation and helpful defaults.",
+      "id": "feature-implement-the-reports-list-page-ui-with-a-table-showing-report-name-type-date-range-created-date-include-filters-for-report-type-and-date-range-and-row-actions-for-view-download-delete-plus-a-top-level-create-new-report-action",
+      "title": "Implement the Reports List Page UI with a table showing: report name, type, date range, created date; include filters for report type and date range; and row/actions for View, Download, Delete plus a top-level “Create New Report” action.",
       "reqIds": [
         "REQ-4"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-a-spending-overview-dashboard-with-charts-and-quick-stats-current-month-income-expense-net-and-top-categories",
-      "title": "Add a spending overview dashboard with charts and quick stats (current month income/expense, net, and top categories).",
+      "id": "feature-implement-the-report-create-edit-page-ui-with-a-form-containing-reporttype-enum-startdate-enddate-and-optional-filters-category-account-tag-and-auto-generate-a-live-report-preview-based-on-the-current-form-values-provide-buttons-save-and-download-pdf",
+      "title": "Implement the Report Create/Edit Page UI with a form containing reportType (enum), startDate, endDate, and optional filters (category, account, tag), and auto-generate a live report preview based on the current form values. Provide buttons: Save and Download PDF.",
       "reqIds": [
         "REQ-5"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-initial-visual-design-direction-and-apply-it-consistently-across-the-app-layout-typography-spacing-and-component-styling-choose-a-distinctive-theme-appropriate-for-a-personal-finance-product-without-using-a-blue-purple-primary-palette",
-      "title": "Add initial visual design direction and apply it consistently across the app (layout, typography, spacing, and component styling). Choose a distinctive theme appropriate for a personal finance product without using a blue/purple primary palette.",
+      "id": "feature-implement-the-report-detail-page-ui-with-a-summary-section-and-a-dynamic-body-charts-or-tables-depending-on-report-type-showing-totals-and-breakdowns-include-actions-edit-delete-download",
+      "title": "Implement the Report Detail Page UI with a summary section and a dynamic body (charts or tables depending on report type) showing totals and breakdowns. Include actions: Edit, Delete, Download.",
       "reqIds": [
         "REQ-6"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-react-query-hooks-in-the-frontend-to-call-the-new-budgets-backend-apis-fetch-monthly-budgets-upsert-delete-budget-limits-fetch-monthly-budget-summaries",
-      "title": "Add React Query hooks in the frontend to call the new Budgets backend APIs (fetch monthly budgets, upsert/delete budget limits, fetch monthly budget summaries).",
+      "id": "feature-add-react-query-hooks-for-reports-in-frontend-src-hooks-usefinancequeries-ts-for-listing-reports-fetching-a-report-creating-updating-deleting-reports-and-generating-report-preview-results-wired-to-the-backend-actor-apis",
+      "title": "Add React Query hooks for Reports in frontend/src/hooks/useFinanceQueries.ts for listing reports, fetching a report, creating/updating/deleting reports, and generating report preview/results, wired to the backend actor APIs.",
       "reqIds": [
-        "REQ-10"
+        "REQ-7"
       ],
       "version": 1
     },
     {
-      "id": "feature-create-a-new-budgets-screen-that-lets-the-user-select-a-month-set-per-category-monthly-limits-and-view-budget-status-spent-remaining-carryover-for-that-month",
-      "title": "Create a new Budgets screen that lets the user select a month, set per-category monthly limits, and view budget status (spent/remaining/carryover) for that month.",
+      "id": "feature-add-a-reports-dashboard-card-to-the-existing-dashboard-page-showing-last-report-type-run-most-used-report-type-and-a-run-new-report-button-that-navigates-to-the-report-create-page",
+      "title": "Add a “Reports” dashboard card to the existing Dashboard page showing: last report type run, most used report type, and a “Run New Report” button that navigates to the report create page.",
       "reqIds": [
-        "REQ-11"
+        "REQ-8"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-budgets-to-the-main-navigation-so-it-appears-alongside-dashboard-accounts-transactions-categories-and-settings",
-      "title": "Add Budgets to the main navigation so it appears alongside Dashboard, Accounts, Transactions, Categories, and Settings.",
+      "id": "feature-add-reports-to-the-main-navigation-under-the-financial-section-conceptually-alongside-other-finance-items-with-a-bar-chart-icon-linking-to-reports",
+      "title": "Add “Reports” to the main navigation under the Financial section conceptually (alongside other finance items) with a Bar Chart icon, linking to /reports.",
       "reqIds": [
-        "REQ-12"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-tags-data-model-scoped-to-the-authenticated-caller-principal-and-allow-each-transaction-to-be-associated-with-zero-or-more-tags-in-addition-to-its-category",
-      "title": "Add a Tags data model scoped to the authenticated caller (Principal), and allow each transaction to be associated with zero or more tags in addition to its category.",
-      "reqIds": [
-        "REQ-13"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-bulk-editing-workflow-in-the-transactions-screen-to-enable-fast-cleanup-multi-select-transactions-review-selection-count-and-apply-bulk-actions",
-      "title": "Add a bulk editing workflow in the Transactions screen to enable fast cleanup: multi-select transactions, review selection count, and apply bulk actions.",
-      "reqIds": [
-        "REQ-15"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-csv-export-for-transactions-and-any-required-related-fields-and-make-it-downloadable-from-the-frontend-without-routing-files-through-the-backend",
-      "title": "Add CSV export for transactions (and any required related fields) and make it downloadable from the frontend without routing files through the backend.",
-      "reqIds": [
-        "REQ-16"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-csv-import-for-transactions-to-enable-adding-many-transactions-at-once-with-validation-feedback-and-a-clear-success-summary",
-      "title": "Add CSV import for transactions to enable adding many transactions at once, with validation feedback and a clear success summary.",
-      "reqIds": [
-        "REQ-17"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-new-bank-connections-module-that-lets-an-authenticated-user-create-view-and-remove-bank-connections-scoped-to-the-current-internet-identity-principal",
-      "title": "Add a new Bank Connections module that lets an authenticated user create, view, and remove bank connections, scoped to the current Internet Identity Principal.",
-      "reqIds": [
-        "REQ-18"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-implement-a-ui-driven-transaction-sync-workflow-for-each-bank-connection-including-a-manual-sync-now-action-and-visible-sync-status-idle-in-progress-last-synced-last-error",
-      "title": "Implement a UI-driven transaction sync workflow for each bank connection, including a manual “Sync now” action and visible sync status (idle/in progress/last synced/last error).",
-      "reqIds": [
-        "REQ-19"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-provide-an-initial-built-in-mock-bank-provider-that-simulates-downloading-transaction-history-and-imports-transactions-into-existing-accounts-categories-transactions-so-the-full-end-to-end-bank-sync-ux-can-be-tested-without-external-bank-apis",
-      "title": "Provide an initial built-in “Mock Bank” provider that simulates downloading transaction history and imports transactions into existing Accounts/Categories/Transactions so the full end-to-end bank sync UX can be tested without external bank APIs.",
-      "reqIds": [
-        "REQ-20"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-navigation-and-routing-for-the-bank-connections-screen-so-it-appears-alongside-the-existing-main-sections-dashboard-accounts-transactions-categories-budgets-settings",
-      "title": "Add navigation and routing for the Bank Connections screen so it appears alongside the existing main sections (Dashboard, Accounts, Transactions, Categories, Budgets, Settings).",
-      "reqIds": [
-        "REQ-21"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-react-query-hooks-to-call-the-new-bank-connections-backend-apis-list-connections-create-delete-sync-and-refresh-relevant-cached-data-after-sync",
-      "title": "Add React Query hooks to call the new Bank Connections backend APIs (list connections, create/delete, sync, and refresh relevant cached data after sync).",
-      "reqIds": [
-        "REQ-22"
+        "REQ-9"
       ],
       "version": 1
     }
@@ -151,114 +71,30 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Create a Firefly 3-like personal finance tracker app (accounts, transactions, spending overview).",
+      "summary": "Create a Payments module (list/create-edit/detail pages, Payment entity, admin/viewer permissions, dashboard card, sidebar navigation)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Create a Reports module (list/create/detail pages, report types incl. P&L/cash flow/invoice & payment summaries/etc., Report entity, dashboard card, sidebar navigation)",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-3",
-      "summary": "Create backend data models and canister APIs to manage personal finance data: accounts, categories, transactions, and summary queries.",
+      "summary": "Implement backend persistence and CRUD APIs for a per-user Report entity, including: id (UUID string), reportType (enum), startDate/endDate (DateTime as Int milliseconds), filters (optional JSON stored as Text), createdAt/updatedAt (Int milliseconds), and a derived report name suitable for display in the Reports list.",
       "reqIds": [
-        "REQ-2"
+        "REQ-1"
       ],
       "status": "pending"
     },
     {
       "id": "AR-4",
-      "summary": "Add Budgets module: monthly budgets, per-category limits, and rollover logic (implemented as a modular feature).",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-5",
-      "summary": "Add Goals module: savings targets with progress tracking (modular).",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-6",
-      "summary": "Add Recurring schedules module: create recurring transactions (monthly/yearly) with automation (modular).",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-7",
-      "summary": "Add Alerts module: low-balance and high-spending notifications (modular).",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-8",
-      "summary": "Add Advanced reports module: trends, comparisons, and custom date ranges (modular).",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-9",
-      "summary": "Add Net-worth module: assets minus liabilities view over time (modular).",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-10",
-      "summary": "Add Bulk editing module: fast cleanup/editing of multiple transactions (modular).",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-11",
-      "summary": "Add Tags module: transaction labeling beyond categories (modular).",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-12",
-      "summary": "Add CSV import/export module for transactions/accounts (modular).",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-13",
-      "summary": "Add Shared accounts/household mode module: shared access to selected accounts (modular).",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-14",
-      "summary": "Add a new Budgets data model to the Motoko backend, scoped per authenticated caller (Principal), supporting monthly budgets with per-category limits and rollover tracking between months.",
+      "summary": "Implement backend query functions to generate report results for the supported report types using existing financial data (transactions/categories, invoices, budgets when available). Report generation must support date range and optional filters (category, account, tag) and return structured data suitable for charts/tables in the UI.",
       "reqIds": [
-        "REQ-7"
+        "REQ-2"
       ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-15",
-      "summary": "Implement backend canister APIs for Budgets CRUD and budget-month summary computation (spent, remaining, rollover/carryover) per category for a selected month.",
-      "reqIds": [
-        "REQ-8"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-16",
-      "summary": "If adding Budgets state changes the upgrade-stable layout, add/adjust backend/migration.mo so existing user data (profiles, accounts, categories, transactions) is preserved across canister upgrades while initializing the new Budgets state safely.",
-      "reqIds": [
-        "REQ-9"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-18",
-      "summary": "Implement backend transaction update and delete capabilities (single and bulk) needed for fast transaction cleanup, including safe authorization and ownership validation per caller.",
-      "reqIds": [
-        "REQ-14"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-19",
-      "summary": "Add bank connections module: allow users to connect to banks and automatically download/sync transaction history via a UI-driven workflow.",
-      "reqIds": [],
       "status": "pending"
     }
   ],

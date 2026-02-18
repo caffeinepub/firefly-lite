@@ -11,10 +11,8 @@ import Order "mo:core/Order";
 import Float "mo:core/Float";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
-import Migration "migration";
+import Time "mo:core/Time";
 
-// Main actor with migration for bank connections
-(with migration = Migration.run)
 actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
@@ -68,7 +66,6 @@ actor {
     name : Text;
   };
 
-  // Bank connection types
   public type BankConnectionId = Nat;
 
   public type BankConnectionStatus = {
@@ -89,6 +86,41 @@ actor {
     retryAttempts : Nat;
   };
 
+  public type ReportType = {
+    #incomeVsExpenses;
+    #categoryBreakdown;
+  };
+
+  public type Report = {
+    id : Nat;
+    name : Text;
+    reportType : ReportType;
+    startDate : Int;
+    endDate : Int;
+    filters : ?Text;
+    createdAt : Int;
+    updatedAt : Int;
+  };
+
+  public type IncomeVsExpensesReportData = {
+    totalIncome : Float;
+    totalExpenses : Float;
+    netIncome : Float;
+    monthlyBreakdown : [(Int, Float)];
+    incomeByCategory : [(Text, Float)];
+    expensesByCategory : [(Text, Float)];
+  };
+
+  public type CategoryBreakdownReportData = {
+    categoryName : Text;
+    totalSpending : Float;
+    transactions : [Transaction];
+    monthlyBreakdown : [(Int, Float)];
+  };
+
+  var reports = Map.empty<Principal, Map.Map<Nat, Report>>();
+  var nextReportId = 1;
+
   var accounts = Map.empty<Principal, Map.Map<AccountId, Account>>();
   var categories = Map.empty<Principal, Map.Map<CategoryId, Category>>();
   var transactions = Map.empty<Principal, Map.Map<TransactionId, Transaction>>();
@@ -100,11 +132,151 @@ actor {
   var nextTransactionId = 1;
   var nextBudgetId = 1;
   var nextTagId = 1;
-  // Bank connections state
   var bankConnections = Map.empty<Principal, Map.Map<BankConnectionId, BankConnection>>();
   var nextBankConnectionId = 1;
 
-  // User profile management
+  public shared ({ caller }) func createReport(reportType : ReportType, startDate : Int, endDate : Int, filters : ?Text) : async Nat {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can create reports");
+    };
+
+    let id = nextReportId;
+    nextReportId += 1;
+
+    let name = generateReportName(reportType, startDate, endDate);
+    let timestamp = Time.now();
+
+    let report : Report = {
+      id;
+      name;
+      reportType;
+      startDate;
+      endDate;
+      filters;
+      createdAt = timestamp;
+      updatedAt = timestamp;
+    };
+
+    let userReports = switch (reports.get(caller)) {
+      case (null) { Map.empty<Nat, Report>() };
+      case (?existing) { existing };
+    };
+    userReports.add(id, report);
+    reports.add(caller, userReports);
+
+    id;
+  };
+
+  public query ({ caller }) func getReports() : async [Report] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can access reports");
+    };
+    switch (reports.get(caller)) {
+      case (null) { [] };
+      case (?userReports) { userReports.values().toArray() };
+    };
+  };
+
+  public query ({ caller }) func getReport(reportId : Nat) : async ?Report {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can access reports");
+    };
+    switch (reports.get(caller)) {
+      case (null) { null };
+      case (?userReports) { userReports.get(reportId) };
+    };
+  };
+
+  public shared ({ caller }) func updateReport(reportId : Nat, reportType : ReportType, startDate : Int, endDate : Int, filters : ?Text) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can update reports");
+    };
+
+    let userReports = switch (reports.get(caller)) {
+      case (null) {
+        Runtime.trap("Report not found or does not belong to caller");
+      };
+      case (?userReports) { userReports };
+    };
+
+    switch (userReports.get(reportId)) {
+      case (null) {
+        Runtime.trap("Report not found or does not belong to caller");
+      };
+      case (?_) {};
+    };
+
+    let updatedReport : Report = {
+      id = reportId;
+      name = generateReportName(reportType, startDate, endDate);
+      reportType;
+      startDate;
+      endDate;
+      filters;
+      createdAt = Time.now();
+      updatedAt = Time.now();
+    };
+    userReports.add(reportId, updatedReport);
+  };
+
+  public shared ({ caller }) func deleteReport(reportId : Nat) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can delete reports");
+    };
+
+    let userReports = switch (reports.get(caller)) {
+      case (null) {
+        Runtime.trap("Report not found or does not belong to caller");
+      };
+      case (?userReports) { userReports };
+    };
+
+    switch (userReports.get(reportId)) {
+      case (null) {
+        Runtime.trap("Report not found or does not belong to caller");
+      };
+      case (?_) {
+        userReports.remove(reportId);
+      };
+    };
+  };
+
+  public query ({ caller }) func listReports() : async [Report] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can access reports");
+    };
+
+    switch (reports.get(caller)) {
+      case (null) { [] };
+      case (?userReports) {
+        let reportsArray = userReports.values().toArray();
+
+        let sorted = reportsArray.sort(
+          func(r1, r2) {
+            Int.compare(r2.createdAt, r1.createdAt);
+          }
+        );
+        sorted;
+      };
+    };
+  };
+
+  func generateReportName(reportType : ReportType, startDate : Int, endDate : Int) : Text {
+    let typeName = switch (reportType) {
+      case (#incomeVsExpenses) { "Income vs. Expenses" };
+      case (#categoryBreakdown) { "Category Breakdown" };
+    };
+
+    let typeWithRange = if (startDate != 0 and endDate != 0) {
+      let startDateStr : Text = startDate.toText();
+      let endDateStr : Text = endDate.toText();
+      typeName.concat(" ").concat(startDateStr).concat(" - ").concat(endDateStr);
+    } else {
+      typeName;
+    };
+    typeWithRange;
+  };
+
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can access profiles");
@@ -126,7 +298,6 @@ actor {
     userProfiles.add(caller, profile);
   };
 
-  // Account management
   public shared ({ caller }) func createAccount(name : Text) : async AccountId {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can create accounts");
@@ -160,7 +331,6 @@ actor {
     };
   };
 
-  // Category management
   public shared ({ caller }) func createCategory(name : Text, isExpense : Bool) : async CategoryId {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can create categories");
@@ -194,7 +364,6 @@ actor {
     };
   };
 
-  // Tag management
   public shared ({ caller }) func createTag(name : Text) : async TagId {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can create tags");
@@ -249,11 +418,15 @@ actor {
     };
   };
 
-  // Transaction management
   public shared ({ caller }) func createTransaction(accountId : AccountId, categoryId : CategoryId, amount : Float, date : Int, tagIds : [TagId]) : async TransactionId {
+    createTransactionInternal(caller, accountId, categoryId, amount, date, tagIds);
+  };
+
+  func createTransactionInternal(caller : Principal, accountId : AccountId, categoryId : CategoryId, amount : Float, date : Int, tagIds : [TagId]) : TransactionId {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can create transactions");
     };
+
     let transactionId = nextTransactionId;
     nextTransactionId += 1;
 
@@ -283,7 +456,6 @@ actor {
       case (?_) {};
     };
 
-    // Validate tags
     let userTags = switch (tags.get(caller)) {
       case (null) { Map.empty<TagId, Tag>() };
       case (?existing) { existing };
@@ -306,7 +478,6 @@ actor {
       tags = tagIds;
     };
 
-    // Update account balance
     let updatedAccount : Account = {
       id = mutAccount.id;
       name = mutAccount.name;
@@ -360,17 +531,37 @@ actor {
     };
   };
 
-  // Budget management
+  public type CsvTransactionRow = {
+    accountId : AccountId;
+    categoryId : CategoryId;
+    amount : Float;
+    date : Int;
+    tagIds : [TagId];
+  };
+
+  public shared ({ caller }) func createTransactionsFromCsvRows(csvTransactions : [CsvTransactionRow]) : async [TransactionId] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can batch import transactions");
+    };
+
+    let transactionIds = List.empty<TransactionId>();
+    for (csvTransaction in csvTransactions.values()) {
+      let id = createTransactionInternal(caller, csvTransaction.accountId, csvTransaction.categoryId, csvTransaction.amount, csvTransaction.date, csvTransaction.tagIds);
+      transactionIds.add(id);
+    };
+
+    transactionIds.toArray();
+  };
+
   public shared ({ caller }) func createBudget(month : Int, categoryLimits : [BudgetCategoryLimit], carryOver : Float) : async BudgetId {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can create budgets");
     };
 
-    // Verify all categories in categoryLimits belong to caller
     let userCategories = switch (categories.get(caller)) {
       case (null) {
         if (categoryLimits.size() > 0) {
-          Runtime.trap("Categories not found or do not belong to caller");
+          Runtime.trap("Categories not found or does not belong to caller");
         };
         Map.empty<CategoryId, Category>();
       };
@@ -445,11 +636,10 @@ actor {
       case (?_) {};
     };
 
-    // Verify all categories in categoryLimits belong to caller
     let userCategories = switch (categories.get(caller)) {
       case (null) {
         if (categoryLimits.size() > 0) {
-          Runtime.trap("Categories not found or do not belong to caller");
+          Runtime.trap("Categories not found or does not belong to caller");
         };
         Map.empty<CategoryId, Category>();
       };
@@ -511,7 +701,6 @@ actor {
       Runtime.trap("Unauthorized: Only users can access budget summaries");
     };
 
-    // Find budget for the month - verify it belongs to caller
     let budget = switch (budgets.get(caller)) {
       case (null) {
         Runtime.trap("Budget not found or does not belong to caller");
@@ -527,9 +716,7 @@ actor {
     };
   };
 
-  // Helper function to generate budget summary
   func generateBudgetSummary(caller : Principal, budget : Budget, month : Int) : BudgetSummary {
-    // Calculate totals
     var totalIncomeBudget = 0.0;
     var totalExpenseBudget = 0.0;
     for (limit in budget.categoryLimits.values()) {
@@ -549,7 +736,6 @@ actor {
       };
     };
 
-    // Calculate actuals
     var actualIncome = 0.0;
     var actualExpenses = 0.0;
     switch (transactions.get(caller)) {
@@ -601,7 +787,6 @@ actor {
     year * 100 + month;
   };
 
-  // Bank connection functions
   public shared ({ caller }) func createBankConnection(name : Text, connectionType : Text) : async BankConnectionId {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can create bank connections");

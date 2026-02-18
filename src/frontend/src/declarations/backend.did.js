@@ -21,8 +21,19 @@ export const BudgetCategoryLimit = IDL.Record({
   'limitAmount' : IDL.Float64,
 });
 export const BudgetId = IDL.Nat;
+export const ReportType = IDL.Variant({
+  'categoryBreakdown' : IDL.Null,
+  'incomeVsExpenses' : IDL.Null,
+});
 export const TagId = IDL.Nat;
 export const TransactionId = IDL.Nat;
+export const CsvTransactionRow = IDL.Record({
+  'categoryId' : CategoryId,
+  'accountId' : AccountId,
+  'date' : IDL.Int,
+  'tagIds' : IDL.Vec(TagId),
+  'amount' : IDL.Float64,
+});
 export const Account = IDL.Record({
   'id' : AccountId,
   'balance' : IDL.Float64,
@@ -65,6 +76,16 @@ export const Category = IDL.Record({
   'isExpense' : IDL.Bool,
   'name' : IDL.Text,
 });
+export const Report = IDL.Record({
+  'id' : IDL.Nat,
+  'filters' : IDL.Opt(IDL.Text),
+  'endDate' : IDL.Int,
+  'name' : IDL.Text,
+  'createdAt' : IDL.Int,
+  'reportType' : ReportType,
+  'updatedAt' : IDL.Int,
+  'startDate' : IDL.Int,
+});
 export const Tag = IDL.Record({ 'id' : TagId, 'name' : IDL.Text });
 export const Transaction = IDL.Record({
   'id' : TransactionId,
@@ -90,14 +111,25 @@ export const idlService = IDL.Service({
       [],
     ),
   'createCategory' : IDL.Func([IDL.Text, IDL.Bool], [CategoryId], []),
+  'createReport' : IDL.Func(
+      [ReportType, IDL.Int, IDL.Int, IDL.Opt(IDL.Text)],
+      [IDL.Nat],
+      [],
+    ),
   'createTag' : IDL.Func([IDL.Text], [TagId], []),
   'createTransaction' : IDL.Func(
       [AccountId, CategoryId, IDL.Float64, IDL.Int, IDL.Vec(TagId)],
       [TransactionId],
       [],
     ),
+  'createTransactionsFromCsvRows' : IDL.Func(
+      [IDL.Vec(CsvTransactionRow)],
+      [IDL.Vec(TransactionId)],
+      [],
+    ),
   'deleteBankConnection' : IDL.Func([BankConnectionId], [], []),
   'deleteBudget' : IDL.Func([BudgetId], [], []),
+  'deleteReport' : IDL.Func([IDL.Nat], [], []),
   'deleteTag' : IDL.Func([TagId], [], []),
   'getAccounts' : IDL.Func([], [IDL.Vec(Account)], ['query']),
   'getBankConnection' : IDL.Func(
@@ -112,6 +144,8 @@ export const idlService = IDL.Service({
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getCategories' : IDL.Func([], [IDL.Vec(Category)], ['query']),
+  'getReport' : IDL.Func([IDL.Nat], [IDL.Opt(Report)], ['query']),
+  'getReports' : IDL.Func([], [IDL.Vec(Report)], ['query']),
   'getTags' : IDL.Func([], [IDL.Vec(Tag)], ['query']),
   'getTransactions' : IDL.Func([], [IDL.Vec(Transaction)], ['query']),
   'getTransactionsByDateRange' : IDL.Func(
@@ -125,6 +159,7 @@ export const idlService = IDL.Service({
       ['query'],
     ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+  'listReports' : IDL.Func([], [IDL.Vec(Report)], ['query']),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'syncBankConnection' : IDL.Func([BankConnectionId], [], []),
   'updateBankConnectionSyncStatus' : IDL.Func(
@@ -134,6 +169,11 @@ export const idlService = IDL.Service({
     ),
   'updateBudget' : IDL.Func(
       [BudgetId, IDL.Int, IDL.Vec(BudgetCategoryLimit), IDL.Float64],
+      [],
+      [],
+    ),
+  'updateReport' : IDL.Func(
+      [IDL.Nat, ReportType, IDL.Int, IDL.Int, IDL.Opt(IDL.Text)],
       [],
       [],
     ),
@@ -155,8 +195,19 @@ export const idlFactory = ({ IDL }) => {
     'limitAmount' : IDL.Float64,
   });
   const BudgetId = IDL.Nat;
+  const ReportType = IDL.Variant({
+    'categoryBreakdown' : IDL.Null,
+    'incomeVsExpenses' : IDL.Null,
+  });
   const TagId = IDL.Nat;
   const TransactionId = IDL.Nat;
+  const CsvTransactionRow = IDL.Record({
+    'categoryId' : CategoryId,
+    'accountId' : AccountId,
+    'date' : IDL.Int,
+    'tagIds' : IDL.Vec(TagId),
+    'amount' : IDL.Float64,
+  });
   const Account = IDL.Record({
     'id' : AccountId,
     'balance' : IDL.Float64,
@@ -199,6 +250,16 @@ export const idlFactory = ({ IDL }) => {
     'isExpense' : IDL.Bool,
     'name' : IDL.Text,
   });
+  const Report = IDL.Record({
+    'id' : IDL.Nat,
+    'filters' : IDL.Opt(IDL.Text),
+    'endDate' : IDL.Int,
+    'name' : IDL.Text,
+    'createdAt' : IDL.Int,
+    'reportType' : ReportType,
+    'updatedAt' : IDL.Int,
+    'startDate' : IDL.Int,
+  });
   const Tag = IDL.Record({ 'id' : TagId, 'name' : IDL.Text });
   const Transaction = IDL.Record({
     'id' : TransactionId,
@@ -224,14 +285,25 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'createCategory' : IDL.Func([IDL.Text, IDL.Bool], [CategoryId], []),
+    'createReport' : IDL.Func(
+        [ReportType, IDL.Int, IDL.Int, IDL.Opt(IDL.Text)],
+        [IDL.Nat],
+        [],
+      ),
     'createTag' : IDL.Func([IDL.Text], [TagId], []),
     'createTransaction' : IDL.Func(
         [AccountId, CategoryId, IDL.Float64, IDL.Int, IDL.Vec(TagId)],
         [TransactionId],
         [],
       ),
+    'createTransactionsFromCsvRows' : IDL.Func(
+        [IDL.Vec(CsvTransactionRow)],
+        [IDL.Vec(TransactionId)],
+        [],
+      ),
     'deleteBankConnection' : IDL.Func([BankConnectionId], [], []),
     'deleteBudget' : IDL.Func([BudgetId], [], []),
+    'deleteReport' : IDL.Func([IDL.Nat], [], []),
     'deleteTag' : IDL.Func([TagId], [], []),
     'getAccounts' : IDL.Func([], [IDL.Vec(Account)], ['query']),
     'getBankConnection' : IDL.Func(
@@ -246,6 +318,8 @@ export const idlFactory = ({ IDL }) => {
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getCategories' : IDL.Func([], [IDL.Vec(Category)], ['query']),
+    'getReport' : IDL.Func([IDL.Nat], [IDL.Opt(Report)], ['query']),
+    'getReports' : IDL.Func([], [IDL.Vec(Report)], ['query']),
     'getTags' : IDL.Func([], [IDL.Vec(Tag)], ['query']),
     'getTransactions' : IDL.Func([], [IDL.Vec(Transaction)], ['query']),
     'getTransactionsByDateRange' : IDL.Func(
@@ -259,6 +333,7 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+    'listReports' : IDL.Func([], [IDL.Vec(Report)], ['query']),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'syncBankConnection' : IDL.Func([BankConnectionId], [], []),
     'updateBankConnectionSyncStatus' : IDL.Func(
@@ -268,6 +343,11 @@ export const idlFactory = ({ IDL }) => {
       ),
     'updateBudget' : IDL.Func(
         [BudgetId, IDL.Int, IDL.Vec(BudgetCategoryLimit), IDL.Float64],
+        [],
+        [],
+      ),
+    'updateReport' : IDL.Func(
+        [IDL.Nat, ReportType, IDL.Int, IDL.Int, IDL.Opt(IDL.Text)],
         [],
         [],
       ),

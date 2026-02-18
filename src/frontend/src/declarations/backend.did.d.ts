@@ -59,6 +59,25 @@ export interface Category {
   'name' : string,
 }
 export type CategoryId = bigint;
+export interface CsvTransactionRow {
+  'categoryId' : CategoryId,
+  'accountId' : AccountId,
+  'date' : bigint,
+  'tagIds' : Array<TagId>,
+  'amount' : number,
+}
+export interface Report {
+  'id' : bigint,
+  'filters' : [] | [string],
+  'endDate' : bigint,
+  'name' : string,
+  'createdAt' : bigint,
+  'reportType' : ReportType,
+  'updatedAt' : bigint,
+  'startDate' : bigint,
+}
+export type ReportType = { 'categoryBreakdown' : null } |
+  { 'incomeVsExpenses' : null };
 export interface Tag { 'id' : TagId, 'name' : string }
 export type TagId = bigint;
 export interface Transaction {
@@ -84,13 +103,22 @@ export interface _SERVICE {
     BudgetId
   >,
   'createCategory' : ActorMethod<[string, boolean], CategoryId>,
+  'createReport' : ActorMethod<
+    [ReportType, bigint, bigint, [] | [string]],
+    bigint
+  >,
   'createTag' : ActorMethod<[string], TagId>,
   'createTransaction' : ActorMethod<
     [AccountId, CategoryId, number, bigint, Array<TagId>],
     TransactionId
   >,
+  'createTransactionsFromCsvRows' : ActorMethod<
+    [Array<CsvTransactionRow>],
+    Array<TransactionId>
+  >,
   'deleteBankConnection' : ActorMethod<[BankConnectionId], undefined>,
   'deleteBudget' : ActorMethod<[BudgetId], undefined>,
+  'deleteReport' : ActorMethod<[bigint], undefined>,
   'deleteTag' : ActorMethod<[TagId], undefined>,
   'getAccounts' : ActorMethod<[], Array<Account>>,
   'getBankConnection' : ActorMethod<[BankConnectionId], [] | [BankConnection]>,
@@ -101,6 +129,8 @@ export interface _SERVICE {
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getCategories' : ActorMethod<[], Array<Category>>,
+  'getReport' : ActorMethod<[bigint], [] | [Report]>,
+  'getReports' : ActorMethod<[], Array<Report>>,
   'getTags' : ActorMethod<[], Array<Tag>>,
   'getTransactions' : ActorMethod<[], Array<Transaction>>,
   'getTransactionsByDateRange' : ActorMethod<
@@ -109,6 +139,7 @@ export interface _SERVICE {
   >,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
+  'listReports' : ActorMethod<[], Array<Report>>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'syncBankConnection' : ActorMethod<[BankConnectionId], undefined>,
   'updateBankConnectionSyncStatus' : ActorMethod<
@@ -117,6 +148,10 @@ export interface _SERVICE {
   >,
   'updateBudget' : ActorMethod<
     [BudgetId, bigint, Array<BudgetCategoryLimit>, number],
+    undefined
+  >,
+  'updateReport' : ActorMethod<
+    [bigint, ReportType, bigint, bigint, [] | [string]],
     undefined
   >,
 }

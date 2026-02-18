@@ -1,14 +1,17 @@
 # Specification
 
 ## Summary
-**Goal:** Add a Bank Connections section where authenticated users can create/manage bank connections and manually sync transactions into the app via a built-in Mock Bank provider.
+**Goal:** Add a Reports module that lets users create, view, manage, and download financial reports, with supporting backend persistence, report generation, and navigation entry points.
 
 **Planned changes:**
-- Backend: Add canister APIs to create/list/delete bank connections scoped to the caller Internet Identity Principal.
-- Backend: Add a per-connection sync API that returns a structured result (created/ignored counts and any error) and tracks sync status (idle/in progress/last synced/last error).
-- Backend: Implement a built-in “Mock Bank” provider that simulates downloading transaction history and imports transactions while avoiding unbounded duplicates across repeated syncs.
-- Frontend: Add navigation + routing for a new Bank Connections screen, gated behind existing authentication rules.
-- Frontend: Build the Bank Connections UI to list connections, add/remove a connection, and run “Sync now” with clear English success/error feedback and disabled state while syncing.
-- Frontend: Add React Query hooks for bank connections (list/create/delete/sync) and invalidate/refetch Transactions (and Accounts if impacted) after successful sync so imported data appears without manual refresh.
+- Backend: add per-user Report persistence and CRUD APIs (create/update/delete/get/list) including reportType, date range, optional JSON filters, timestamps, and a displayable derived report name.
+- Backend: add report-generation API for supported report types (Profit & Loss, Cash Flow, Invoice Summary, Payment Summary, Budget vs. Actual, Category Breakdown) using existing finance data, supporting date range + optional filters (category/account/tag) and returning structured results for UI.
+- Frontend: add protected routes/pages for reports: list (/reports), create (/reports/new), detail (/reports/$reportId), and edit (/reports/$reportId/edit) reusing the create form.
+- Frontend: implement Reports List page with table columns (name, type, date range, created date), filters (type, date range), and actions (View, Download PDF, Delete) plus “Create New Report”.
+- Frontend: implement Report Create/Edit form (type, start/end date, optional filters) with live preview generation, validation, Save, and Download PDF (works before saving).
+- Frontend: implement Report Detail page with summary + dynamic charts/tables per report type, and actions Edit, Delete, Download PDF.
+- Frontend: add React Query hooks for listing/fetching/creating/updating/deleting reports and generating previews/results, following existing query/invalidation patterns.
+- Frontend: add a Dashboard “Reports” card showing last report type run, most used report type, and a “Run New Report” button.
+- Frontend: add “Reports” to main navigation under Financial with a bar chart icon linking to /reports.
 
-**User-visible outcome:** Authenticated users can open Bank Connections, add a Mock Bank connection, click “Sync now” to import transactions, and then see the new transactions appear in the Transactions page with visible sync status and error feedback.
+**User-visible outcome:** Users can navigate to a new Reports area, create/edit reports with a live preview, view report details with charts/tables, delete reports, and download reports as English PDFs; the dashboard and navigation include new Reports entry points.

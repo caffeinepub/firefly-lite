@@ -1,85 +1,135 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-17T04:04:39.116Z",
+  "generatedAt": "2026-02-18T04:55:51.457Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 5,
-    "implemented": 5,
+    "total": 9,
+    "implemented": 7,
     "items": [
       {
-        "id": "REQ-18",
-        "summary": "Add a new Bank Connections module that lets an authenticated user create, view, and remove bank connections, scoped to the current Internet Identity Principal.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/BankConnectionsPage.tsx",
-          "frontend/src/hooks/useFinanceQueries.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/BankConnectionsPage.tsx",
-          "frontend/src/hooks/useFinanceQueries.ts"
-        ]
+        "id": "REQ-1",
+        "summary": "Implement backend persistence and CRUD APIs for a per-user Report entity, including: id (UUID string), reportType (enum), startDate/endDate (DateTime as Int milliseconds), filters (optional JSON stored as Text), createdAt/updatedAt (Int milliseconds), and a derived report name suitable for display in the Reports list.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       },
       {
-        "id": "REQ-19",
-        "summary": "Implement a UI-driven transaction sync workflow for each bank connection, including a manual “Sync now” action and visible sync status (idle/in progress/last synced/last error).",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/BankConnectionsPage.tsx",
-          "frontend/src/hooks/useFinanceQueries.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/BankConnectionsPage.tsx",
-          "frontend/src/hooks/useFinanceQueries.ts"
-        ]
+        "id": "REQ-2",
+        "summary": "Implement backend query functions to generate report results for the supported report types using existing financial data (transactions/categories, invoices, budgets when available). Report generation must support date range and optional filters (category, account, tag) and return structured data suitable for charts/tables in the UI.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       },
       {
-        "id": "REQ-20",
-        "summary": "Provide an initial built-in “Mock Bank” provider that simulates downloading transaction history and imports transactions into existing Accounts/Categories/Transactions so the full end-to-end bank sync UX can be tested without external bank APIs.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/BankConnectionsPage.tsx",
-          "frontend/src/hooks/useFinanceQueries.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/BankConnectionsPage.tsx",
-          "frontend/src/hooks/useFinanceQueries.ts"
-        ]
-      },
-      {
-        "id": "REQ-21",
-        "summary": "Add navigation and routing for the Bank Connections screen so it appears alongside the existing main sections (Dashboard, Accounts, Transactions, Categories, Budgets, Settings).",
+        "id": "REQ-3",
+        "summary": "Add Reports routes to the TanStack Router and create three pages: Reports list page (/reports), report create page (/reports/new) and report detail page (/reports/$reportId), plus an edit route (/reports/$reportId/edit) reusing the create form for editing.",
         "status": "implemented",
         "plannedFiles": [
           "frontend/src/App.tsx",
-          "frontend/src/components/layout/AppShell.tsx"
+          "frontend/src/pages/ReportsPage.tsx",
+          "frontend/src/pages/ReportFormPage.tsx",
+          "frontend/src/pages/ReportDetailPage.tsx"
         ],
         "matchedFiles": [
           "frontend/src/App.tsx",
-          "frontend/src/components/layout/AppShell.tsx"
+          "frontend/src/pages/ReportsPage.tsx",
+          "frontend/src/pages/ReportFormPage.tsx",
+          "frontend/src/pages/ReportDetailPage.tsx"
         ]
       },
       {
-        "id": "REQ-22",
-        "summary": "Add React Query hooks to call the new Bank Connections backend APIs (list connections, create/delete, sync, and refresh relevant cached data after sync).",
+        "id": "REQ-4",
+        "summary": "Implement the Reports List Page UI with a table showing: report name, type, date range, created date; include filters for report type and date range; and row/actions for View, Download, Delete plus a top-level “Create New Report” action.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/ReportsPage.tsx",
+          "frontend/src/utils/reportPdf.ts",
+          "frontend/src/components/reports/ReportResultsView.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/ReportsPage.tsx",
+          "frontend/src/utils/reportPdf.ts",
+          "frontend/src/components/reports/ReportResultsView.tsx"
+        ]
+      },
+      {
+        "id": "REQ-5",
+        "summary": "Implement the Report Create/Edit Page UI with a form containing reportType (enum), startDate, endDate, and optional filters (category, account, tag), and auto-generate a live report preview based on the current form values. Provide buttons: Save and Download PDF.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/ReportFormPage.tsx",
+          "frontend/src/components/tags/TagMultiSelect.tsx",
+          "frontend/src/components/reports/ReportResultsView.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/ReportFormPage.tsx",
+          "frontend/src/components/reports/ReportResultsView.tsx"
+        ]
+      },
+      {
+        "id": "REQ-6",
+        "summary": "Implement the Report Detail Page UI with a summary section and a dynamic body (charts or tables depending on report type) showing totals and breakdowns. Include actions: Edit, Delete, Download.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/ReportDetailPage.tsx",
+          "frontend/src/pages/ReportsPage.tsx",
+          "frontend/src/utils/reportPdf.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/ReportDetailPage.tsx",
+          "frontend/src/pages/ReportsPage.tsx",
+          "frontend/src/utils/reportPdf.ts"
+        ]
+      },
+      {
+        "id": "REQ-7",
+        "summary": "Add React Query hooks for Reports in frontend/src/hooks/useFinanceQueries.ts for listing reports, fetching a report, creating/updating/deleting reports, and generating report preview/results, wired to the backend actor APIs.",
         "status": "implemented",
         "plannedFiles": [
           "frontend/src/hooks/useFinanceQueries.ts",
-          "frontend/src/pages/BankConnectionsPage.tsx"
+          "frontend/src/pages/ReportsPage.tsx",
+          "frontend/src/pages/ReportFormPage.tsx"
         ],
         "matchedFiles": [
           "frontend/src/hooks/useFinanceQueries.ts",
-          "frontend/src/pages/BankConnectionsPage.tsx"
+          "frontend/src/pages/ReportsPage.tsx",
+          "frontend/src/pages/ReportFormPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-8",
+        "summary": "Add a “Reports” dashboard card to the existing Dashboard page showing: last report type run, most used report type, and a “Run New Report” button that navigates to the report create page.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/dashboard/ReportsCard.tsx",
+          "frontend/src/pages/DashboardPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/dashboard/ReportsCard.tsx",
+          "frontend/src/pages/DashboardPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-9",
+        "summary": "Add “Reports” to the main navigation under the Financial section conceptually (alongside other finance items) with a Bar Chart icon, linking to /reports.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/layout/AppShell.tsx",
+          "frontend/src/App.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/layout/AppShell.tsx",
+          "frontend/src/App.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
     "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
@@ -87,11 +137,21 @@
     "frontend/src/App.tsx",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
+    "frontend/src/components/dashboard/ReportsCard.tsx",
     "frontend/src/components/layout/AppShell.tsx",
+    "frontend/src/components/reports/ReportResultsView.tsx",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
     "frontend/src/hooks/useFinanceQueries.ts",
-    "frontend/src/pages/BankConnectionsPage.tsx",
+    "frontend/src/pages/BudgetsPage.tsx",
+    "frontend/src/pages/DashboardPage.tsx",
+    "frontend/src/pages/InvoiceDetailPage.tsx",
+    "frontend/src/pages/InvoiceFormPage.tsx",
+    "frontend/src/pages/ReportDetailPage.tsx",
+    "frontend/src/pages/ReportFormPage.tsx",
+    "frontend/src/pages/ReportsPage.tsx",
+    "frontend/src/pages/TransactionsPage.tsx",
+    "frontend/src/utils/reportPdf.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",
